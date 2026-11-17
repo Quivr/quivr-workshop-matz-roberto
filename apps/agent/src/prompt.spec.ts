@@ -23,6 +23,7 @@ Rules:
 `.trim()
 
 const SAFETY_RULES = [
+  'The persona must not make answers longer',
   "Answer only from tool results. If the tools don't return the information, say you don't know.",
   'wait for their confirmation before calling any tool that changes something',
   'Never guess the date',
@@ -73,4 +74,35 @@ describe('withPersona', () => {
     expect(prompt.startsWith(NEUTRAL)).toBe(true)
     expectRulesAfterPersona(prompt, hostile)
   })
+})
+
+describe('persona text stays in sync with the frontend cast', () => {
+  // The frontend (apps/frontend/src/characters/*.ts) owns the persona text.
+  // Importing it here would couple the agent to frontend-only code, so we pin a
+  // distinctive phrase per character instead. Update both sides together.
+  const FRONTEND_PHRASES: Record<CharacterId, string> = {
+    bram: 'my golden friend',
+    stien: 'a beautiful thing',
+    gus: 'on the house, kid',
+    pip: 'BUBBLES!',
+    nova: 'Nova out.',
+    rex: 'LEAVE IT ALL ON THE LUNCH TRAY!',
+    mira: 'apologises to furniture',
+    otto: 'a baguette-based sandwich',
+    juno: 'ooh, nice setup!',
+    sage: 'baffling proverb about vegetables',
+  }
+
+  it('covers every character', () => {
+    expect(Object.keys(FRONTEND_PHRASES).sort()).toEqual(
+      Object.keys(PERSONAS).sort()
+    )
+  })
+
+  it.each(Object.entries(FRONTEND_PHRASES))(
+    'agent persona for %s contains the frontend phrase',
+    (id, phrase) => {
+      expect(PERSONAS[id as CharacterId]).toContain(phrase)
+    }
+  )
 })
