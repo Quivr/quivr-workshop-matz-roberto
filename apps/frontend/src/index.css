@@ -11,7 +11,7 @@
   --color-blue-pretty: #176cc0; /* links: >= 4.5:1 on surface and page */
   --color-sidenav-blue: #34495e;
   --color-sidenav-secondary: #566e86;
-  --color-vegan: #15803d;
+  --color-vegan: #14532d; /* white text (on-diet) >= 4.5:1; clearly darker than vegetarian */
   --color-vegetarian: #2e8512; /* white text (on-diet) >= 4.5:1 */
   --color-schedule-bg-grey: #f1f1f1;
   --color-schedule-border-grey: #ddd;
@@ -317,7 +317,7 @@
   --color-sidenav-secondary: #53697f;
   --color-danger: #ff6b5e;
   --color-blue-pretty: #6cb2f5;
-  --color-vegan: #4ade80;
+  --color-vegan: #1cae53;
   --color-vegetarian: #bef264;
   --color-on-diet: #0f2a18;
 }
