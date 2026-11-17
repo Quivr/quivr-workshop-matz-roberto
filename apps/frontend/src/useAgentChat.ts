@@ -2,6 +2,8 @@ import { HttpAgent, type AgentSubscriber } from '@ag-ui/client'
 import type { Message } from '@ag-ui/core'
 import { useCallback, useRef, useState } from 'react'
 
+import { createRunTracker, dropOrphanToolCalls } from './chatRun'
+
 const TOOL_TIMING_EVENT = 'tool_timing'
 
 const newAgent = () => new HttpAgent({ url: '/api/agent' })
@@ -11,33 +13,10 @@ export type UseAgentChatOptions = {
   characterId?: string
 }
 
-/**
- * An aborted run can leave an assistant message whose tool calls never got a
- * result. The model API rejects that history, so drop the orphaned calls.
- */
-const dropOrphanToolCalls = (messages: Message[]): Message[] => {
-  const answered = new Set(
-    messages.flatMap(message =>
-      message.role === 'tool' ? [message.toolCallId] : []
-    )
-  )
-  return messages.flatMap(message => {
-    if (message.role !== 'assistant' || !message.toolCalls?.length)
-      return [message]
-    const toolCalls = message.toolCalls.filter(call => answered.has(call.id))
-    if (toolCalls.length === message.toolCalls.length) return [message]
-    if (toolCalls.length === 0 && !message.content) return []
-    return [{ ...message, toolCalls }]
-  })
-}
-
 /** Chat state on top of an AG-UI HttpAgent. Memory only: "new chat" forgets everything. */
 export const useAgentChat = (options: UseAgentChatOptions = {}) => {
   const agentRef = useRef(newAgent())
-  // Bumped whenever a run is started or cancelled: callbacks of a run that is
-  // no longer the current one must not touch state (or show an error).
-  const runIdRef = useRef(0)
-  const isRunningRef = useRef(false)
+  const runsRef = useRef(createRunTracker())
   const [messages, setMessages] = useState<Message[]>([])
   const [isRunning, setIsRunning] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -45,8 +24,7 @@ export const useAgentChat = (options: UseAgentChatOptions = {}) => {
 
   const send = async (text: string, model?: string) => {
     const agent = agentRef.current
-    const runId = ++runIdRef.current
-    const isCurrent = () => runIdRef.current === runId
+    const { isCurrent, finish } = runsRef.current.start()
 
     const subscriber: AgentSubscriber = {
       onMessagesChanged: ({ messages }) => {
@@ -72,7 +50,6 @@ export const useAgentChat = (options: UseAgentChatOptions = {}) => {
     setMessages([...agent.messages])
     setError(null)
     setIsRunning(true)
-    isRunningRef.current = true
     try {
       const { model: defaultModel, characterId } = options
       await agent.runAgent(
@@ -85,19 +62,14 @@ export const useAgentChat = (options: UseAgentChatOptions = {}) => {
           runError instanceof Error ? runError.message : String(runError)
         )
     } finally {
-      if (isCurrent()) {
-        isRunningRef.current = false
-        setIsRunning(false)
-      }
+      if (finish()) setIsRunning(false)
     }
   }
 
   /** Cancels the in-flight run and keeps the conversation. No-op when idle. */
   const abort = useCallback(() => {
-    if (!isRunningRef.current) return
+    if (!runsRef.current.cancel()) return
     const agent = agentRef.current
-    runIdRef.current++
-    isRunningRef.current = false
     agent.abortRun()
     agent.setMessages(dropOrphanToolCalls(agent.messages))
     setMessages([...agent.messages])
@@ -105,8 +77,7 @@ export const useAgentChat = (options: UseAgentChatOptions = {}) => {
   }, [])
 
   const reset = () => {
-    runIdRef.current++
-    isRunningRef.current = false
+    runsRef.current.invalidate()
     agentRef.current.abortRun()
     agentRef.current = newAgent()
     setMessages([])

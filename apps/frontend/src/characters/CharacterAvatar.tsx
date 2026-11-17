@@ -1,16 +1,17 @@
-import LottieModule, { type LottieRefCurrentProps } from 'lottie-react'
-import { useEffect, useRef, useSyncExternalStore } from 'react'
+import {
+  Component,
+  lazy,
+  Suspense,
+  useSyncExternalStore,
+  type ReactNode,
+} from 'react'
 
 import { getCharacter } from './registry'
 import type { CharacterClip } from './types'
 
-// lottie-react is CJS-only in Vite's dev pre-bundle: the default import can be
-// the module object ({ default: Lottie }) instead of the component.
-const Lottie = (
-  'default' in LottieModule
-    ? (LottieModule as unknown as { default: typeof LottieModule }).default
-    : LottieModule
-) as typeof LottieModule
+// lottie-web is ~300 KB: keep it out of the first load. It is fetched once,
+// the first time any avatar renders.
+const AnimatedAvatar = lazy(() => import('./AnimatedAvatar'))
 
 const QUERY = '(prefers-reduced-motion: reduce)'
 
@@ -28,6 +29,20 @@ function useReducedMotion(): boolean {
   )
 }
 
+/** A failed chunk load (offline, deploy in between) leaves the placeholder. */
+class LoadBoundary extends Component<
+  { fallback: ReactNode; children: ReactNode },
+  { failed: boolean }
+> {
+  state = { failed: false }
+  static getDerivedStateFromError() {
+    return { failed: true }
+  }
+  render() {
+    return this.state.failed ? this.props.fallback : this.props.children
+  }
+}
+
 type Props = {
   characterId: string
   clip?: CharacterClip
@@ -43,12 +58,6 @@ export function CharacterAvatar({
 }: Props) {
   const character = getCharacter(characterId)
   const reduced = useReducedMotion()
-  const lottieRef = useRef<LottieRefCurrentProps>(null)
-
-  useEffect(() => {
-    if (reduced) lottieRef.current?.goToAndStop(0, true)
-    else lottieRef.current?.play()
-  }, [reduced])
 
   if (!character) {
     return (
@@ -63,7 +72,13 @@ export function CharacterAvatar({
     )
   }
 
-  const data = character.animations[clip] ?? character.animations.idle
+  const placeholder = (
+    <span
+      aria-hidden="true"
+      className="bg-main-text/10 m-auto rounded-full"
+      style={{ width: size * 0.7, height: size * 0.7 }}
+    />
+  )
 
   return (
     <span
@@ -72,13 +87,16 @@ export function CharacterAvatar({
       className={`inline-flex shrink-0 ${className}`}
       style={{ width: size, height: size }}
     >
-      <Lottie
-        lottieRef={lottieRef}
-        animationData={data}
-        loop
-        autoplay={!reduced}
-        style={{ width: size, height: size }}
-      />
+      <LoadBoundary fallback={placeholder}>
+        <Suspense fallback={placeholder}>
+          <AnimatedAvatar
+            characterId={characterId}
+            clip={clip}
+            size={size}
+            reduced={reduced}
+          />
+        </Suspense>
+      </LoadBoundary>
     </span>
   )
 }
