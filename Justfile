@@ -65,7 +65,8 @@ doctor:
 ########################################################################################################
 # Start mcp (3002), agent (3001) and frontend (http://localhost:5173) in watch mode.
 # Everything reloads on save: TypeScript restarts the servers, Vite hot-reloads the UI,
-# and editing a .graphql query regenerates the types. A crashed process restarts itself.
+# and editing a .graphql query regenerates the types.
+# Ports 3001/3002/5173 must be free: if one is taken, the whole stack stops with EADDRINUSE.
 [group('dev')]
 dev:
     yarn dev

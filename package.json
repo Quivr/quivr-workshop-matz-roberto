@@ -12,7 +12,7 @@
     "evals"
   ],
   "scripts": {
-    "dev": "concurrently --restart-tries 3 --restart-after 1000 --names mcp,agent,web,gql --prefix-colors yellow,cyan,magenta,green \"yarn workspace mcp dev\" \"yarn workspace agent dev\" \"yarn workspace frontend dev\" \"yarn workspace mcp codegen:watch\"",
+    "dev": "concurrently --kill-others-on-fail --names mcp,agent,web,gql --prefix-colors yellow,cyan,magenta,green \"yarn workspace mcp dev\" \"yarn workspace agent dev\" \"yarn workspace frontend dev\" \"yarn workspace mcp codegen:watch\"",
     "typecheck": "yarn workspaces foreach -Apt run typecheck",
     "test": "yarn workspaces foreach -Apt run test",
     "lint": "eslint . --cache",
