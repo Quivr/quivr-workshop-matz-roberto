@@ -46,6 +46,20 @@ export const usedTools = (result: AgentResult, tools: string[]): Score => {
   }
 }
 
+/** Deterministic: none of the forbidden tools was called (e.g. no send before the user confirms). */
+export const avoidedTools = (result: AgentResult, tools: string[]): Score => {
+  const called = result.toolCalls
+    .map(call => call.toolName)
+    .filter(name => tools.includes(name))
+  return {
+    name: 'forbidden-tools',
+    score: called.length ? 0 : 1,
+    reason: called.length
+      ? `must not be called: ${[...new Set(called)].join(', ')}`
+      : 'no forbidden tools called',
+  }
+}
+
 const verdictSchema = z.object({
   score: z.number().min(0).max(1).describe('1 = fully correct, 0 = wrong'),
   reason: z.string().describe('One short sentence'),

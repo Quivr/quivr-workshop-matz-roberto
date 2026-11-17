@@ -1,3 +1,5 @@
+import { useId } from 'react'
+
 import type { Mode } from '../App'
 import { ThemeToggle } from '../theme/ThemeToggle'
 
@@ -17,16 +19,27 @@ function ModeCard({
   description: string
   onClick: () => void
 }) {
+  const id = useId()
   return (
     <button
       type="button"
       onClick={onClick}
+      aria-labelledby={`${id}-title`}
+      aria-describedby={`${id}-description`}
       className={cardClass}
     >
-      <span className="font-title text-heading block text-2xl tracking-wide">
+      <span
+        id={`${id}-title`}
+        className="font-title text-heading block text-2xl tracking-wide"
+      >
         {title}
       </span>
-      <span className="text-sm">{description}</span>
+      <span
+        id={`${id}-description`}
+        className="text-sm"
+      >
+        {description}
+      </span>
     </button>
   )
 }
@@ -34,7 +47,7 @@ function ModeCard({
 export function HomeScreen({ onSelect }: Props) {
   return (
     <div className="flex h-dvh flex-col">
-      <header className="bg-sidenav-blue flex flex-wrap items-center gap-3 px-4 py-2 text-white">
+      <header className="bg-sidenav-blue **:focus-visible:outline-main flex flex-wrap items-center gap-3 px-4 py-2 text-white">
         <img
           src="/logo.svg"
           alt=""
@@ -46,9 +59,9 @@ export function HomeScreen({ onSelect }: Props) {
         <ThemeToggle />
       </header>
       <main className="mx-auto w-full max-w-3xl flex-1 space-y-6 overflow-y-auto p-4 pt-10">
-        <p className="font-title text-heading text-center text-3xl">
+        <h2 className="font-title text-heading text-center text-3xl">
           What do you want to do?
-        </p>
+        </h2>
         <ModeCard
           title="Quivr SaaS"
           description="Ask Quivr about menus, classes, libraries and more."

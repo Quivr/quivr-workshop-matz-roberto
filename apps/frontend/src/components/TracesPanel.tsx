@@ -51,10 +51,17 @@ export function TracesPanel() {
   }, [])
 
   if (error)
-    return <p className="text-danger">Could not load traces: {error}</p>
-  if (!traces) return <p>Loading traces…</p>
+    return (
+      <p
+        role="alert"
+        className="text-danger"
+      >
+        Could not load traces: {error}
+      </p>
+    )
+  if (!traces) return <p role="status">Loading traces…</p>
   if (traces.length === 0)
-    return <p>No runs yet. Ask something in the chat first.</p>
+    return <p role="status">No runs yet. Ask something in the chat first.</p>
 
   return (
     <div className="space-y-2">

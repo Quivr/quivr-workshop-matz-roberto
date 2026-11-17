@@ -23,14 +23,14 @@ export function Header({
   onHome,
 }: Props) {
   return (
-    <header className="bg-sidenav-blue flex flex-wrap items-center gap-3 px-4 py-2 text-white">
+    <header className="bg-sidenav-blue **:focus-visible:outline-main flex flex-wrap items-center gap-3 px-4 py-2 text-white">
       {onHome && (
         <button
           type="button"
           onClick={onHome}
           className={buttonClass}
         >
-          ← Home
+          <span aria-hidden>← </span>Home
         </button>
       )}
       <img

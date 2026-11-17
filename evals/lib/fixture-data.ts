@@ -1,5 +1,6 @@
 import { addDays, brusselsDate } from 'mcp/dates'
 import { QuivrClient } from 'mcp/quivr-client'
+import { tools } from 'mcp/tools'
 
 import { fixturesNow } from './run.js'
 
@@ -12,6 +13,22 @@ export const fixtures = new QuivrClient({
   readOnly: true,
   baseUrl: '',
 })
+
+/**
+ * Runs a read-only MCP tool in-process on the fixtures: exactly the data the
+ * agent sees, so expected answers follow the tools and the recordings.
+ * Never use it for a tool that writes: send_date_invite is refused here.
+ */
+export const callTool = async <T>(
+  name: string,
+  input: Record<string, unknown>
+): Promise<T> => {
+  if (name === 'send_date_invite')
+    throw new Error('Evals never run send_date_invite in-process')
+  const tool = tools.find(candidate => candidate.name === name)
+  if (!tool) throw new Error(`Unknown tool ${name}`)
+  return (await tool.run(input as never, fixtures)) as T
+}
 
 export const today = () => brusselsDate(fixturesNow())
 export const tomorrow = () => addDays(today(), 1)
