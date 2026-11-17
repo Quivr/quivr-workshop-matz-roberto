@@ -13,7 +13,7 @@ export function RestaurantsCard({ result }: CardProps) {
   return (
     <Card
       title="Student restaurants"
-      subtitle={`${restaurants.length} restaurants`}
+      subtitle={`${restaurants.length} restaurant${restaurants.length === 1 ? '' : 's'}`}
     >
       {restaurants.length === 0 && <p>No restaurants found.</p>}
       <ul className="divide-schedule-border-grey divide-y">
