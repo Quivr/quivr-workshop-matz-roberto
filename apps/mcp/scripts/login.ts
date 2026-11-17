@@ -1,4 +1,5 @@
 import { stdin, stdout } from 'node:process'
+import { Writable } from 'node:stream'
 import { createInterface } from 'node:readline/promises'
 
 import { credentialsFrom, loadConfig } from '../src/config.js'
@@ -14,18 +15,27 @@ type LoginResponse = {
 type LoginResult = LoginResponse & { authorization: string | null }
 
 const ask = async (question: string, hidden = false): Promise<string> => {
-  const rl = createInterface({ input: stdin, output: stdout, terminal: true })
-  if (hidden) {
-    const write = stdout.write.bind(stdout)
-    // Echo the question, but mask everything typed after it.
-    ;(rl as unknown as { _writeToOutput: (s: string) => void })._writeToOutput =
-      s =>
-        write(s.startsWith(question) ? question : s.includes('\n') ? '\n' : '*')
+  // Readline echoes through this stream, so muting it hides typing completely.
+  let muted = false
+  const output = new Writable({
+    write(chunk, _encoding, done) {
+      if (!muted) stdout.write(chunk)
+      done()
+    },
+  })
+  const rl = createInterface({ input: stdin, output, terminal: true })
+  rl.once('SIGINT', () => {
+    stdout.write('\n')
+    process.exit(130)
+  })
+  const answer = rl.question(question)
+  muted = hidden
+  try {
+    return (await answer).trim()
+  } finally {
+    rl.close()
+    if (hidden) stdout.write('\n')
   }
-  const answer = await rl.question(question)
-  rl.close()
-  if (hidden) stdout.write('\n')
-  return answer.trim()
 }
 
 const login = async (body: Record<string, string>): Promise<LoginResult> => {
@@ -36,6 +46,11 @@ const login = async (body: Record<string, string>): Promise<LoginResult> => {
   })
   const json = (await response.json().catch(() => ({}))) as LoginResponse
   return { ...json, authorization: response.headers.get('authorization') }
+}
+
+if (!stdin.isTTY) {
+  console.error('`just login` needs an interactive terminal.')
+  process.exit(1)
 }
 
 const { baseUrl } = loadConfig()

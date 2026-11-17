@@ -45,7 +45,7 @@ setup:
         echo 'Created .env from .env.example. Add your ANTHROPIC_API_KEY to it.'
     fi
 
-# Log in to Quivr and save the token to .env (your password is never stored)
+# Log in to Quivr and save the token to .env (password and code are typed hidden, never stored)
 [group('setup')]
 login:
     yarn workspace mcp login
