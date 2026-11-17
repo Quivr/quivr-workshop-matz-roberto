@@ -1,13 +1,22 @@
-/** Hard cap on the number of turns. Nothing runs unattended beyond it. */
-export const MAX_TURNS = 8
-
 /** An argument needs at least this many characters who are not away. */
 export const MIN_ARGUERS = 2
 
-export type EndReason = 'limit' | 'button' | 'student' | 'error' | 'empty'
+/**
+ * Why an argument ended for good. Only the button, an error, too few
+ * characters, or a configured turn limit end it: a student message does not.
+ */
+export type EndReason = 'limit' | 'button' | 'error' | 'empty'
+
+/**
+ * - running: the characters take turns;
+ * - answering: the student stepped in, one character answers them;
+ * - calm: the beat after the answer, before they pick the fight back up;
+ * - ended: over for good.
+ */
+export type ArgumentStatus = 'idle' | 'running' | 'answering' | 'calm' | 'ended'
 
 export type ArgumentState = {
-  status: 'idle' | 'running' | 'ended'
+  status: ArgumentStatus
   endReason?: EndReason
   topic: string
   /** The characters, in speaking order. */
@@ -16,6 +25,12 @@ export type ArgumentState = {
   turn: number
   /** Who has the floor right now, or null when nobody has. */
   speaker: string | null
+  /** Who had the floor when the student stepped in: the order goes on after them. */
+  floor: string | null
+  /** True from the moment they pick the argument up again until that turn is done. */
+  resuming: boolean
+  /** Optional cap on finished turns. Null (the default) means no cap. */
+  maxTurns: number | null
   error?: string
 }
 
@@ -25,14 +40,28 @@ export type ArgumentAction =
   | { type: 'turnFailed'; error: string }
   | { type: 'stop' }
   | { type: 'studentMessage' }
+  | { type: 'answered' }
+  | { type: 'resume'; away?: readonly string[] }
 
-export const initialState = (cast: readonly string[]): ArgumentState => ({
+export const initialState = (
+  cast: readonly string[],
+  maxTurns: number | null = null
+): ArgumentState => ({
   status: 'idle',
   topic: '',
   cast,
   turn: 0,
   speaker: null,
+  floor: null,
+  resuming: false,
+  maxTurns,
 })
+
+/** Still going, in any of its three live phases: "Stop it!" ends all of them. */
+export const isActive = (state: ArgumentState): boolean =>
+  state.status === 'running' ||
+  state.status === 'answering' ||
+  state.status === 'calm'
 
 /** Round robin: whoever spoke last is followed by the next one in the cast. */
 export const speakerForTurn = (
@@ -80,10 +109,15 @@ const end = (
   status: 'ended',
   endReason,
   speaker: null,
+  floor: null,
+  resuming: false,
   error,
 })
 
-/** Pure turn-taking state machine. Actions that arrive after the end are ignored. */
+/**
+ * Pure turn-taking state machine. Actions that arrive after the end are
+ * ignored, and so are the ones that make no sense in the current phase.
+ */
 export const argumentReducer = (
   state: ArgumentState,
   action: ArgumentAction
@@ -106,22 +140,52 @@ export const argumentReducer = (
     case 'turnFinished': {
       if (state.status !== 'running') return state
       const turn = state.turn + 1
-      if (turn >= MAX_TURNS) return end({ ...state, turn }, 'limit')
+      if (state.maxTurns !== null && turn >= state.maxTurns) {
+        return end({ ...state, turn }, 'limit')
+      }
       const speaker = nextSpeaker(state.cast, action.away ?? [], state.speaker)
       if (speaker === null) return end({ ...state, turn }, 'empty')
-      return { ...state, turn, speaker }
+      return { ...state, turn, speaker, resuming: false }
     }
 
     case 'turnFailed':
-      if (state.status !== 'running') return state
+      if (!isActive(state)) return state
       return end(state, 'error', action.error)
 
+    // Final: whatever phase it is in, "Stop it!" ends the argument for good.
     case 'stop':
-      if (state.status !== 'running') return state
+      if (!isActive(state)) return state
       return end(state, 'button')
 
+    // Temporary: the characters calm down, one answers, then they go on.
     case 'studentMessage':
-      if (state.status !== 'running') return state
-      return end(state, 'student')
+      if (state.status === 'running') {
+        return {
+          ...state,
+          status: 'answering',
+          floor: state.speaker,
+          speaker: null,
+          resuming: false,
+        }
+      }
+      if (state.status === 'calm') return { ...state, status: 'answering' }
+      return state
+
+    case 'answered':
+      if (state.status !== 'answering') return state
+      return { ...state, status: 'calm' }
+
+    case 'resume': {
+      if (state.status !== 'calm') return state
+      const speaker = nextSpeaker(state.cast, action.away ?? [], state.floor)
+      if (speaker === null) return end(state, 'empty')
+      return {
+        ...state,
+        status: 'running',
+        speaker,
+        floor: null,
+        resuming: true,
+      }
+    }
   }
 }

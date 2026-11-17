@@ -69,7 +69,8 @@ export function PartyRoom({ party }: Props) {
       {party.rows.length === 0 && (
         <p className="text-muted px-4 pt-3 text-center text-sm">
           Pick a topic and watch Gus, Bram and Stien fight, or write below and
-          ask them something. Step in while they argue and they calm down.
+          ask them something. Step in while they argue and they calm down,
+          answer you, then pick the fight back up.
         </p>
       )}
       <ArgumentThread

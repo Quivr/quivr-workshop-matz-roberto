@@ -1,7 +1,5 @@
 import type { Message, UserMessage } from '@ag-ui/core'
 
-import { MAX_TURNS } from './turns'
-
 export type Topic = { id: string; label: string; question: string }
 
 export const TOPICS: Topic[] = [
@@ -66,6 +64,10 @@ type InstructionInput = {
   speakerName: string
   otherNames: string[]
   previousSpeakerName?: string
+  /** Set when the argument is configured with a turn limit. */
+  maxTurns?: number | null
+  /** The student interrupted, got an answer, and the argument starts again. */
+  resuming?: boolean
 }
 
 /** The last message of an argument turn: who you are and what to do now. */
@@ -74,14 +76,18 @@ export const turnInstruction = ({
   speakerName,
   otherNames,
   previousSpeakerName,
+  maxTurns = null,
+  resuming = false,
 }: InstructionInput): UserMessage => ({
   id: `instruction-${turn + 1}`,
   role: 'user',
   content: [
-    `ARGUMENT, turn ${turn + 1} of ${MAX_TURNS}. You are ${speakerName}, in a group chat with ${otherNames.join(' and ')}. Lines that start with a name in square brackets were said by the others, not by you.`,
-    previousSpeakerName
-      ? `${previousSpeakerName} spoke last: answer them directly, disagree and take a side.`
-      : 'You speak first: take a side and start the fight.',
+    `ARGUMENT, turn ${turn + 1}${maxTurns === null ? '' : ` of ${maxTurns}`}. You are ${speakerName}, in a group chat with ${otherNames.join(' and ')}. Lines that start with a name in square brackets were said by the others, not by you.`,
+    resuming
+      ? 'The student stepped in, calmed you all down and got an answer (see the last messages). Now the argument picks up again: get worked up once more, ideally riffing on what the student just said, and take a side.'
+      : previousSpeakerName
+        ? `${previousSpeakerName} spoke last: answer them directly, disagree and take a side.`
+        : 'You speak first: take a side and start the fight.',
     ...FACT_RULES,
   ].join('\n'),
 })

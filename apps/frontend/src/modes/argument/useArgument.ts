@@ -13,13 +13,16 @@ import {
   type ThreadItem,
   type Topic,
 } from './messages'
+import { pause, waitUntilVisible } from './gates'
 import {
   argumentReducer,
   firstPresent,
   initialState,
-  MAX_TURNS,
   type ArgumentAction,
 } from './turns'
+
+/** The beat of calm after the student's answer, before they start up again. */
+export const CALM_MS = 2_500
 
 const TOOL_TIMING_EVENT = 'tool_timing'
 
@@ -36,23 +39,36 @@ export type ArgumentOptions = {
   answerer?: string
   /** Lets the student write before any argument has started. */
   canChatFirst?: boolean
+  /** Optional cap on finished turns. Unlimited when left out. */
+  maxTurns?: number
+  /** How long they stay calm after answering the student. */
+  calmMs?: number
 }
 
 /**
  * One shared thread, three characters. The reducer in turns.ts decides whose
  * turn it is; every turn is one run of a fresh agent that is given the whole
  * thread, so every character sees the same transcript. The run's own messages
- * join the thread when it ends. Every run is aborted on stop, on a student
- * message and on unmount. A character who is away is skipped in the turn
- * order (the reducer never counts a skipped turn, so the cap holds) and
- * comes back into it when he is no longer away.
+ * join the thread when it ends.
+ *
+ * There is no turn cap unless `maxTurns` is set, so the only things that end
+ * an argument for good are "Stop it!", leaving the screen, a failing turn and
+ * too few characters. Everything else is paced: no turn starts while the tab
+ * is hidden. A student message is not an end: the runs stop, one character
+ * answers, the characters calm down for a beat and the argument goes on from
+ * where the turn order was. Every run, wait and timer is aborted on stop, on
+ * a student message and on unmount. A character who is away is skipped in
+ * the turn order (a skipped turn never counts) and comes back into it when
+ * he is no longer away.
  */
 export const useArgument = (
   cast: readonly string[],
   model: string,
   options: ArgumentOptions = {}
 ) => {
-  const [state, setState] = useState(() => initialState(cast))
+  const [state, setState] = useState(() =>
+    initialState(cast, options.maxTurns ?? null)
+  )
   const [thread, setThread] = useState<ThreadItem[]>([])
   const [live, setLive] = useState<Live | null>(null)
   const [durations, setDurations] = useState<Record<string, number>>({})
@@ -67,6 +83,8 @@ export const useArgument = (
   const repliesRef = useRef(0)
   // Bumped on every stop: a loop or a run from an older generation gives up.
   const generationRef = useRef(0)
+  // Aborted on every stop with the generation: ends the waits (hidden tab, calm beat) of the old one.
+  const abortRef = useRef(new AbortController())
   // Bumped by newArgument: a run from an older argument must not touch the new thread.
   const epochRef = useRef(0)
   const modelRef = useRef(model)
@@ -156,21 +174,23 @@ export const useArgument = (
 
   const stopAll = () => {
     generationRef.current += 1
+    abortRef.current.abort()
+    abortRef.current = new AbortController()
     agentRef.current?.abortRun()
   }
 
   useEffect(() => stopAll, [])
 
-  const start = async (topic: Topic) => {
-    if (stateRef.current.status !== 'idle' || isRunningRef.current) return
-    topicRef.current = topic
+  /** The turn loop. Ends when the state stops running or a stop makes this generation stale. */
+  const argue = async () => {
     const generation = generationRef.current
-    dispatch({ type: 'start', topic: topic.label, away: awayNow() })
-
-    // The reducer ends the argument at MAX_TURNS; this bound is a second guard.
-    for (let i = 0; i < MAX_TURNS; i++) {
+    const { signal } = abortRef.current
+    for (;;) {
       const current = stateRef.current
       if (current.status !== 'running' || current.speaker === null) return
+      if (generation !== generationRef.current) return
+      // A hidden tab pauses the argument between two turns, and a stop ends the wait.
+      if (!(await waitUntilVisible(signal))) return
       if (generation !== generationRef.current) return
 
       const speaker = current.speaker
@@ -187,6 +207,8 @@ export const useArgument = (
             .filter(id => id !== speaker && !away.includes(id))
             .map(nameOf),
           previousSpeakerName: previous ? nameOf(previous) : undefined,
+          maxTurns: current.maxTurns,
+          resuming: current.resuming,
         })
       )
       if (generation !== generationRef.current) return
@@ -199,7 +221,22 @@ export const useArgument = (
       }
       dispatch({ type: 'turnFinished', away: awayNow() })
     }
-    dispatch({ type: 'stop' })
+  }
+
+  const start = async (topic: Topic) => {
+    if (stateRef.current.status !== 'idle' || isRunningRef.current) return
+    topicRef.current = topic
+    dispatch({ type: 'start', topic: topic.label, away: awayNow() })
+    await argue()
+  }
+
+  /** The answer is in: a calm beat, then the argument picks up where the turn order was. */
+  const resumeAfterBeat = async (generation: number, signal: AbortSignal) => {
+    dispatch({ type: 'answered' })
+    if (!(await pause(optionsRef.current.calmMs ?? CALM_MS, signal))) return
+    if (generation !== generationRef.current) return
+    dispatch({ type: 'resume', away: awayNow() })
+    await argue()
   }
 
   const stop = () => {
@@ -207,34 +244,52 @@ export const useArgument = (
     stopAll()
   }
 
-  /** The student writes into the thread: the argument stops and one character answers. */
+  /**
+   * The student writes into the thread. While the argument runs this is an
+   * interruption, not an end: the runs stop, one character answers, and after
+   * a calm beat the argument goes on. Anywhere else one character just answers.
+   */
   const sendStudent = async (text: string) => {
     const status = stateRef.current.status
     if (status === 'idle' && !optionsRef.current.canChatFirst) return
-    if (status === 'running') {
+    if (status === 'running' || status === 'calm') {
       dispatch({ type: 'studentMessage' })
       stopAll()
     } else if (isRunningRef.current) {
       return
     }
+    const interrupted = stateRef.current.status === 'answering'
+    const generation = generationRef.current
+    const { signal } = abortRef.current
     await inflightRef.current
     commit([
       { message: { id: crypto.randomUUID(), role: 'user', content: text } },
     ])
+    // "Stop it!" or leaving the screen while the last run wound down: no answer.
+    if (generation !== generationRef.current) return
     // Whoever had the floor answers; later messages go round the cast (the
     // answerer, when there is one and he is here, takes all of them).
     const away = awayNow()
     const { answerer } = optionsRef.current
+    const { floor, cast: people, turn } = stateRef.current
     const speaker =
       answerer !== undefined && !away.includes(answerer)
         ? answerer
-        : firstPresent(
-            stateRef.current.cast,
-            stateRef.current.turn + repliesRef.current++,
-            away
-          )
-    if (speaker === null) return
-    await runTurn(speaker, replyInstruction(nameOf(speaker)))
+        : interrupted && floor !== null
+          ? firstPresent(people, people.indexOf(floor), away)
+          : firstPresent(people, turn + repliesRef.current++, away)
+    if (speaker !== null) {
+      const { failure } = await runTurn(
+        speaker,
+        replyInstruction(nameOf(speaker))
+      )
+      if (generation !== generationRef.current) return
+      if (interrupted && failure) {
+        dispatch({ type: 'turnFailed', error: failure })
+        return
+      }
+    }
+    if (interrupted) void resumeAfterBeat(generation, signal)
   }
 
   /** Back to an empty table: aborts any run, forgets the thread and the topic. */
@@ -246,7 +301,7 @@ export const useArgument = (
     topicRef.current = null
     repliesRef.current = 0
     threadRef.current = []
-    stateRef.current = initialState(cast)
+    stateRef.current = initialState(cast, optionsRef.current.maxTurns ?? null)
     setState(stateRef.current)
     setThread([])
     setLive(null)
