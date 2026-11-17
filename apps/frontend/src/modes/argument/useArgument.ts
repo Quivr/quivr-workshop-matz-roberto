@@ -1,57 +1,56 @@
 import { HttpAgent, type AgentSubscriber } from '@ag-ui/client'
-import type { Message } from '@ag-ui/core'
+import type { Message, UserMessage } from '@ag-ui/core'
 import { useEffect, useRef, useState } from 'react'
 
 import { getCharacter } from '../../characters/registry'
 import {
+  buildInput,
   dropIncomplete,
-  heardMessage,
-  isPrompt,
+  replyInstruction,
   spokenText,
-  turnPrompt,
+  turnInstruction,
+  type ThreadItem,
   type Topic,
 } from './messages'
 import {
   argumentReducer,
   initialState,
   MAX_TURNS,
+  speakerForTurn,
   type ArgumentAction,
 } from './turns'
 
 const TOOL_TIMING_EVENT = 'tool_timing'
 
-export type Chat = {
-  messages: Message[]
-  durations: Record<string, number>
-  isRunning: boolean
-  error: string | null
-}
-
-const emptyChat: Chat = {
-  messages: [],
-  durations: {},
-  isRunning: false,
-  error: null,
-}
-
 const nameOf = (id: string) => getCharacter(id)?.name ?? id
 
+type Live = { speaker: string; messages: Message[] }
+
+type TurnResult = { failure: string | null; text: string }
+
 /**
- * Three agents, one per character, taking turns. The reducer in turns.ts
- * decides whose turn it is; this hook only runs the turn and reports back.
- * Every run is aborted on stop, on a student message and on unmount.
+ * One shared thread, three characters. The reducer in turns.ts decides whose
+ * turn it is; every turn is one run of a fresh agent that is given the whole
+ * thread, so every character sees the same transcript. The run's own messages
+ * join the thread when it ends. Every run is aborted on stop, on a student
+ * message and on unmount.
  */
 export const useArgument = (cast: readonly string[], model: string) => {
   const [state, setState] = useState(() => initialState(cast))
-  const [chats, setChats] = useState<Record<string, Chat>>(() =>
-    Object.fromEntries(cast.map(id => [id, emptyChat]))
-  )
+  const [thread, setThread] = useState<ThreadItem[]>([])
+  const [live, setLive] = useState<Live | null>(null)
+  const [durations, setDurations] = useState<Record<string, number>>({})
+  const [error, setError] = useState<string | null>(null)
+
   const stateRef = useRef(state)
-  const agentsRef = useRef<Map<string, HttpAgent>>(new Map())
-  const inflightRef = useRef<Map<string, Promise<void>>>(new Map())
+  const threadRef = useRef<ThreadItem[]>([])
+  const agentRef = useRef<HttpAgent | null>(null)
+  const inflightRef = useRef<Promise<unknown>>(Promise.resolve())
+  const isRunningRef = useRef(false)
+  const topicRef = useRef<Topic | null>(null)
+  const repliesRef = useRef(0)
   // Bumped on every stop: a loop or a run from an older generation gives up.
   const generationRef = useRef(0)
-  const topicRef = useRef<Topic | null>(null)
   const modelRef = useRef(model)
   useEffect(() => {
     modelRef.current = model
@@ -62,103 +61,78 @@ export const useArgument = (cast: readonly string[], model: string) => {
     setState(stateRef.current)
   }
 
-  const patch = (id: string, change: Partial<Chat>) =>
-    setChats(previous => ({
-      ...previous,
-      [id]: { ...(previous[id] ?? emptyChat), ...change },
-    }))
-
-  const agentFor = (id: string) => {
-    let agent = agentsRef.current.get(id)
-    if (!agent) {
-      agent = new HttpAgent({ url: '/api/agent' })
-      agentsRef.current.set(id, agent)
-    }
-    return agent
+  const commit = (items: ThreadItem[]) => {
+    threadRef.current = [...threadRef.current, ...items]
+    setThread(threadRef.current)
   }
 
-  const sync = (id: string) =>
-    patch(id, { messages: [...agentFor(id).messages] })
-
-  const subscriberFor = (
-    id: string,
-    onError: (message: string) => void
-  ): AgentSubscriber => ({
-    onRunErrorEvent: ({ event }) => onError(event.message),
-    onRunFailed: ({ error }) => onError(error.message),
-    onMessagesChanged: ({ messages }) => patch(id, { messages: [...messages] }),
-    onCustomEvent: ({ event }) => {
-      if (event.name !== TOOL_TIMING_EVENT) return
-      const { toolCallId, durationMs } = event.value as {
-        toolCallId: string
-        durationMs: number
-      }
-      setChats(previous => {
-        const chat = previous[id] ?? emptyChat
-        return {
-          ...previous,
-          [id]: {
-            ...chat,
-            durations: { ...chat.durations, [toolCallId]: durationMs },
-          },
-        }
-      })
-    },
-  })
-
-  /** One run of one character's agent. Resolves with an error message, if any. */
-  const runOne = (id: string): Promise<string | null> => {
+  /** One run of one character, given the whole thread. */
+  const runTurn = (
+    speaker: string,
+    instruction: UserMessage
+  ): Promise<TurnResult> => {
     const generation = generationRef.current
-    const agent = agentFor(id)
-    patch(id, { isRunning: true, error: null })
-    const run = (async () => {
-      let failure: string | null = null
+    const input = buildInput(
+      topicRef.current!,
+      threadRef.current,
+      speaker,
+      nameOf,
+      instruction
+    )
+    const agent = new HttpAgent({
+      url: '/api/agent',
+      initialMessages: input,
+    })
+    agentRef.current = agent
+    isRunningRef.current = true
+    setError(null)
+    setLive({ speaker, messages: [] })
+
+    let failure: string | null = null
+    const subscriber: AgentSubscriber = {
+      onRunErrorEvent: ({ event }) => {
+        failure = event.message
+      },
+      onMessagesChanged: ({ messages }) =>
+        setLive({ speaker, messages: messages.slice(input.length) }),
+      onCustomEvent: ({ event }) => {
+        if (event.name !== TOOL_TIMING_EVENT) return
+        const { toolCallId, durationMs } = event.value as {
+          toolCallId: string
+          durationMs: number
+        }
+        setDurations(previous => ({ ...previous, [toolCallId]: durationMs }))
+      },
+    }
+
+    const run = (async (): Promise<TurnResult> => {
       try {
         await agent.runAgent(
-          { forwardedProps: { model: modelRef.current, characterId: id } },
-          subscriberFor(id, message => {
-            failure = message
-          })
+          { forwardedProps: { model: modelRef.current, characterId: speaker } },
+          subscriber
         )
-      } catch (error) {
-        failure = error instanceof Error ? error.message : String(error)
+      } catch (caught) {
+        failure = caught instanceof Error ? caught.message : String(caught)
       }
-      if (generation !== generationRef.current) {
-        // Aborted half way: a tool call without a result would break the next run.
-        agent.setMessages(dropIncomplete(agent.messages))
-        failure = null
-      }
-      patch(id, {
-        isRunning: false,
-        messages: [...agent.messages],
-        error: failure,
-      })
-      return failure
+      // Aborted half way: a tool call without a result would break the next run.
+      const fresh = dropIncomplete(agent.messages.slice(input.length))
+      commit(fresh.map(message => ({ message, speaker })))
+      isRunningRef.current = false
+      setLive(null)
+      if (generation !== generationRef.current) failure = null
+      else if (failure) setError(failure)
+      return { failure, text: spokenText(fresh) }
     })()
-    inflightRef.current.set(
-      id,
-      run.then(() => undefined)
-    )
+    inflightRef.current = run
     return run
   }
 
   const stopAll = () => {
     generationRef.current += 1
-    for (const agent of agentsRef.current.values()) agent.abortRun()
+    agentRef.current?.abortRun()
   }
 
   useEffect(() => stopAll, [])
-
-  /** Gives a character what it has heard since it last spoke. */
-  const deliverInbox = (id: string) => {
-    const agent = agentFor(id)
-    const inbox = stateRef.current.inbox[id] ?? []
-    for (const heard of inbox) {
-      agent.addMessage(heardMessage(heard, nameOf(heard.from)))
-    }
-    dispatch({ type: 'delivered', characterId: id })
-    return inbox
-  }
 
   const start = async (topic: Topic) => {
     if (stateRef.current.status !== 'idle') return
@@ -173,33 +147,27 @@ export const useArgument = (cast: readonly string[], model: string) => {
       if (generation !== generationRef.current) return
 
       const speaker = current.speaker
-      const agent = agentFor(speaker)
-      const turnStart = agent.messages.length
-      const inbox = deliverInbox(speaker)
-      agent.addMessage(
-        turnPrompt({
-          topic,
+      const previous = threadRef.current.findLast(
+        item => item.speaker !== undefined && item.message.role === 'assistant'
+      )?.speaker
+      const { failure, text } = await runTurn(
+        speaker,
+        turnInstruction({
           turn: current.turn,
           speakerName: nameOf(speaker),
           otherNames: current.cast.filter(id => id !== speaker).map(nameOf),
-          isFirstTurnForSpeaker: !agent.messages.some(isPrompt),
-          previousSpeakerName: inbox.length
-            ? nameOf(inbox[inbox.length - 1]!.from)
-            : undefined,
+          previousSpeakerName: previous ? nameOf(previous) : undefined,
         })
       )
-      sync(speaker)
-
-      const failure = await runOne(speaker)
       if (generation !== generationRef.current) return
-      if (failure) {
-        dispatch({ type: 'turnFailed', error: failure })
+      if (failure || !text) {
+        dispatch({
+          type: 'turnFailed',
+          error: failure ?? 'Nobody said anything.',
+        })
         return
       }
-      dispatch({
-        type: 'turnFinished',
-        text: spokenText(agent.messages, turnStart),
-      })
+      dispatch({ type: 'turnFinished' })
     }
     dispatch({ type: 'stop' })
   }
@@ -209,20 +177,37 @@ export const useArgument = (cast: readonly string[], model: string) => {
     stopAll()
   }
 
-  /** The student types into one chat: the argument stops and that character answers. */
-  const sendStudent = async (id: string, text: string) => {
-    if (stateRef.current.status === 'idle') return
-    if (stateRef.current.status === 'running') {
+  /** The student writes into the thread: the argument stops and one character answers. */
+  const sendStudent = async (text: string) => {
+    const status = stateRef.current.status
+    if (status === 'idle') return
+    if (status === 'running') {
       dispatch({ type: 'studentMessage' })
       stopAll()
+    } else if (isRunningRef.current) {
+      return
     }
-    await inflightRef.current.get(id)
-    const agent = agentFor(id)
-    deliverInbox(id)
-    agent.addMessage({ id: crypto.randomUUID(), role: 'user', content: text })
-    sync(id)
-    await runOne(id)
+    await inflightRef.current
+    commit([
+      { message: { id: crypto.randomUUID(), role: 'user', content: text } },
+    ])
+    // Whoever had the floor answers; later messages go round the cast.
+    const speaker = speakerForTurn(
+      stateRef.current.cast,
+      stateRef.current.turn + repliesRef.current++
+    )!
+    await runTurn(speaker, replyInstruction(nameOf(speaker)))
   }
 
-  return { state, chats, start, stop, sendStudent }
+  return {
+    state,
+    thread,
+    live,
+    durations,
+    error,
+    isRunning: live !== null,
+    start,
+    stop,
+    sendStudent,
+  }
 }
