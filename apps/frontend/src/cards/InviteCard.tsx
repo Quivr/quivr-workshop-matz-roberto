@@ -105,7 +105,7 @@ function Avatar({
   return (
     <span
       aria-hidden
-      className={`${box} flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-pink-400 via-rose-400 to-orange-300 font-bold text-white shadow-sm ring-2 ring-white`}
+      className={`${box} ring-surface flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-pink-400 via-rose-400 to-orange-300 font-bold text-white shadow-sm ring-2`}
     >
       {photoUrl && !isBroken ? (
         <img
@@ -137,24 +137,24 @@ function Phone({
       aria-label={`Chat with ${name}`}
       className="mx-auto w-full max-w-[320px] rounded-[30px] bg-zinc-900 p-1.5 shadow-[0_12px_30px_-10px_rgba(190,24,93,0.45)] ring-1 ring-black/40"
     >
-      <div className="overflow-hidden rounded-[24px] bg-white">
+      <div className="bg-surface overflow-hidden rounded-[24px]">
         <div
           aria-hidden
-          className="relative flex items-center justify-between px-5 pt-1.5 pb-1 text-[10px] font-bold text-zinc-800"
+          className="text-heading relative flex items-center justify-between px-5 pt-1.5 pb-1 text-[10px] font-bold"
         >
           <span>9:41</span>
           <span className="absolute top-1.5 left-1/2 h-4 w-20 -translate-x-1/2 rounded-full bg-zinc-900" />
           <span className="tracking-tighter">▂▄▆ ▮</span>
         </div>
 
-        <header className="flex items-center gap-2.5 border-b border-zinc-100 px-3 py-2">
+        <header className="border-schedule-border-grey flex items-center gap-2.5 border-b px-3 py-2">
           <Avatar
             name={name}
             size="md"
           />
           <div className="min-w-0 flex-1 leading-tight">
-            <div className="truncate font-bold text-zinc-900">{name}</div>
-            <div className="flex items-center gap-1 text-[11px] text-zinc-500">
+            <div className="text-heading truncate font-bold">{name}</div>
+            <div className="text-muted flex items-center gap-1 text-[11px]">
               {status}
             </div>
           </div>
@@ -171,7 +171,7 @@ function EventChip({ where, when }: { where?: string; when?: string }) {
   if (!where && !when) return null
   return (
     <div className="flex justify-center px-3 pt-3">
-      <div className="inline-flex max-w-full items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-[11px] text-zinc-600 shadow-sm ring-1 ring-rose-200/70 backdrop-blur">
+      <div className="bg-surface/80 text-muted ring-love-line inline-flex max-w-full items-center gap-2 rounded-full px-3 py-1 text-[11px] shadow-sm ring-1 backdrop-blur">
         {where && (
           <span className="truncate">
             <span aria-label="Where">📍</span> {where}
@@ -180,7 +180,7 @@ function EventChip({ where, when }: { where?: string; when?: string }) {
         {where && when && (
           <span
             aria-hidden
-            className="text-rose-300"
+            className="text-love"
           >
             ·
           </span>
@@ -196,7 +196,7 @@ function EventChip({ where, when }: { where?: string; when?: string }) {
 }
 
 const screen =
-  'bg-linear-to-b from-rose-50 via-white to-pink-50/60 pb-4 text-[13px] leading-snug'
+  'bg-linear-to-b from-love-wash via-surface to-love-wash/60 pb-4 text-[13px] leading-snug'
 
 function Delivered({ invite }: { invite: Invite }) {
   return (
@@ -224,7 +224,7 @@ function Delivered({ invite }: { invite: Invite }) {
             <p className="sc-pop max-w-[80%] rounded-2xl rounded-br-md bg-linear-to-br from-pink-500 to-rose-500 px-3 py-2 text-white shadow-[0_4px_14px_-4px_rgba(225,29,72,0.55)]">
               {invite.message}
             </p>
-            <span className="sc-delivered mt-0.5 mr-1 text-[10px] text-zinc-400">
+            <span className="sc-delivered text-muted mt-0.5 mr-1 text-[10px]">
               Delivered <span className="text-sky-500">✓✓</span>
             </span>
           </div>
@@ -239,11 +239,11 @@ function Delivered({ invite }: { invite: Invite }) {
                 size="sm"
                 photoUrl={invite.photoUrl}
               />
-              <span className="flex gap-1 rounded-2xl rounded-bl-md bg-zinc-200/90 px-3 py-2.5">
+              <span className="bg-cardbg flex gap-1 rounded-2xl rounded-bl-md px-3 py-2.5">
                 {[0, 1, 2].map(i => (
                   <span
                     key={i}
-                    className="sc-typing-dot size-1.5 rounded-full bg-zinc-500"
+                    className="sc-typing-dot bg-muted size-1.5 rounded-full"
                     style={{ animationDelay: `${i * 0.15}s` }}
                   />
                 ))}
@@ -259,7 +259,7 @@ function Delivered({ invite }: { invite: Invite }) {
                 size="sm"
                 photoUrl={invite.photoUrl}
               />
-              <p className="max-w-[80%] rounded-2xl rounded-bl-md bg-white px-3 py-2 text-zinc-800 shadow-sm ring-1 ring-zinc-200/80">
+              <p className="bg-surface text-main-text ring-schedule-border-grey max-w-[80%] rounded-2xl rounded-bl-md px-3 py-2 shadow-sm ring-1">
                 <span className="sr-only">{invite.to} replied: </span>
                 {invite.reply}
               </p>
@@ -332,7 +332,7 @@ function Draft({ args, error }: { args: InviteArgs; error: string }) {
         <>
           <span
             aria-hidden
-            className="size-1.5 rounded-full bg-zinc-300"
+            className="bg-schedule-border-grey size-1.5 rounded-full"
           />
           demo · not sent yet
         </>
@@ -347,13 +347,11 @@ function Draft({ args, error }: { args: InviteArgs; error: string }) {
         <div className="flex flex-col items-end gap-1 px-3 pt-3">
           {args.message && (
             <>
-              <p className="sc-draft max-w-[80%] rounded-2xl rounded-br-md border-2 border-dashed border-rose-300 bg-rose-50/70 px-3 py-2 text-rose-900">
+              <p className="sc-draft border-love-line bg-love-wash/70 text-love-ink max-w-[80%] rounded-2xl rounded-br-md border-2 border-dashed px-3 py-2">
                 <span className="sr-only">Draft: </span>
                 {args.message}
               </p>
-              <span className="mr-1 text-[10px] text-zinc-400 italic">
-                Draft
-              </span>
+              <span className="text-muted mr-1 text-[10px] italic">Draft</span>
             </>
           )}
         </div>
@@ -362,8 +360,8 @@ function Draft({ args, error }: { args: InviteArgs; error: string }) {
           role="status"
           className={`sc-banner mx-3 mt-3 rounded-xl px-3 py-2 text-center text-xs ring-1 ${
             waiting
-              ? 'bg-amber-50 text-amber-800 ring-amber-200'
-              : 'bg-red-50 text-red-700 ring-red-200'
+              ? 'bg-amber-50 text-amber-800 ring-amber-200 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/30'
+              : 'dark:bg-danger/10 dark:text-danger dark:ring-danger/30 bg-red-50 text-red-700 ring-red-200'
           }`}
         >
           {waiting ? (

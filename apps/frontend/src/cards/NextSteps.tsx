@@ -32,7 +32,7 @@ export function NextSteps({
       </span>
       {!wallet.isUnlimited && (
         <span
-          className="text-[10px] font-bold text-pink-600"
+          className="text-love-text text-[10px] font-bold"
           title="Free options left. Each tap uses one."
         >
           {isLocked ? '🔒 0 free' : `🎟 ${wallet.state.actions} free`}
@@ -46,7 +46,7 @@ export function NextSteps({
           onClick={() => send(step.message)}
           title={step.message}
           style={{ animationDelay: `${index * 60}ms` }}
-          className="motion-safe:animate-fade-up rounded-full bg-white px-3 py-1 text-xs font-semibold text-pink-600 shadow-sm ring-1 ring-pink-500/30 transition hover:-translate-y-0.5 hover:bg-pink-50 hover:shadow-md focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:outline-none active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+          className="motion-safe:animate-fade-up bg-surface text-love-text ring-love/30 hover:bg-love-wash rounded-full px-3 py-1 text-xs font-semibold shadow-sm ring-1 transition hover:-translate-y-0.5 hover:shadow-md focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:outline-none active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
         >
           {isLocked && <span aria-label="locked">🔒 </span>}
           {step.label}

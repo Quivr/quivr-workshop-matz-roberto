@@ -143,7 +143,7 @@ function Frame({
   children: ReactNode
 }) {
   return (
-    <section className="free-card my-1 overflow-hidden rounded-2xl bg-white shadow-[0_10px_24px_-12px_rgb(52_73_94/0.35)] ring-1 ring-black/5">
+    <section className="free-card bg-surface ring-heading/5 my-1 overflow-hidden rounded-2xl shadow-[0_10px_24px_-12px_color-mix(in_srgb,var(--color-shade)_35%,transparent)] ring-1">
       <header className="free-band flex items-center gap-3 px-4 py-3 text-white">
         <span
           aria-hidden
@@ -157,7 +157,7 @@ function Frame({
           </h3>
           {subtitle && <p className="mt-1 text-xs text-white/85">{subtitle}</p>}
         </div>
-        <span className="shrink-0 rounded-full bg-white">
+        <span className="bg-surface shrink-0 rounded-full">
           <DemoBadge note={note} />
         </span>
       </header>
@@ -262,7 +262,7 @@ export function FreeTimeCard({ result, error }: CardProps) {
         note={result.note}
       >
         <div className="text-main-text px-4 py-8 text-center text-sm">
-          <p className="font-title text-sidenav-blue text-2xl tracking-wide">
+          <p className="font-title text-heading text-2xl tracking-wide">
             No shared free time{' '}
             <span
               role="img"
@@ -329,10 +329,10 @@ export function FreeTimeCard({ result, error }: CardProps) {
               className="pb-2 text-center"
               title={longDate(date)}
             >
-              <div className="text-sidenav-secondary text-[10px] font-bold tracking-[0.18em] uppercase">
+              <div className="text-muted text-[10px] font-bold tracking-[0.18em] uppercase">
                 {weekdayShort(date)}
               </div>
-              <div className="font-title text-sidenav-blue text-2xl leading-none">
+              <div className="font-title text-heading text-2xl leading-none">
                 {Number(date.slice(8))}
               </div>
             </div>
@@ -346,7 +346,7 @@ export function FreeTimeCard({ result, error }: CardProps) {
             {AXIS_HOURS.map(hour => (
               <span
                 key={hour}
-                className="text-sidenav-secondary absolute right-1 -translate-y-1/2 text-[10px] tabular-nums"
+                className="text-muted absolute right-1 -translate-y-1/2 text-[10px] tabular-nums"
                 style={{ top: `${offset(hour * 60)}%` }}
               >
                 {String(hour).padStart(2, '0')}:00
@@ -374,7 +374,7 @@ export function FreeTimeCard({ result, error }: CardProps) {
                 <div
                   key={hour}
                   aria-hidden
-                  className="border-sidenav-blue/10 absolute inset-x-0 border-t"
+                  className="border-heading/10 absolute inset-x-0 border-t"
                   style={{ top: `${offset(hour * 60)}%` }}
                 />
               ))}
@@ -398,7 +398,7 @@ export function FreeTimeCard({ result, error }: CardProps) {
       <footer className="text-main-text border-schedule-border-grey border-t border-dashed px-4 pt-2.5 pb-3 text-xs">
         <p>
           Longest:{' '}
-          <strong className="text-sidenav-blue">
+          <strong className="text-heading">
             {longDate(longest.date)}, {longest.start}–{longest.end}
           </strong>{' '}
           ({duration(longest.minutes)})
@@ -406,7 +406,7 @@ export function FreeTimeCard({ result, error }: CardProps) {
             <>
               {' '}
               · Lunch pick:{' '}
-              <strong className="text-sidenav-blue">
+              <strong className="text-heading">
                 {weekdayShort(lunchSlot.date)} {lunchSlot.start}
               </strong>
             </>

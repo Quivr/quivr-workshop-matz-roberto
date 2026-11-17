@@ -3,14 +3,24 @@
 
 .pw-overlay,
 .pw-pill {
-  --pw-navy: #34495e;
-  --pw-ink: #22313f;
-  --pw-yellow: #ffd750;
-  --pw-pink: #ff5fa2;
-  --pw-hot: #d6006f;
-  --pw-blush: #ffe3f0;
-  --pw-purple: #7c3aed;
-  --pw-gold: #f5b700;
+  --pw-navy: var(--color-sidenav-blue);
+  --pw-line: var(--color-sidenav-blue); /* borders and hard shadows */
+  --pw-ink: var(--color-heading); /* text on the sheet and cards */
+  --pw-on-yellow: var(--color-sidenav-blue); /* text on yellow fills */
+  --pw-yellow: var(--color-main);
+  --pw-paper: var(--color-main); /* the sheet */
+  --pw-card: var(--color-surface); /* cards, bubbles, receipt */
+  --pw-pink: var(--color-love);
+  --pw-hot: var(--color-love-hot); /* fills under white text */
+  --pw-hot-text: var(--color-love-hot); /* pink text on a card */
+  --pw-blush: var(--color-love-wash-2);
+  --pw-purple: var(--color-love-violet);
+  --pw-focus: var(--color-love-violet);
+  --pw-title-shadow: var(--color-surface);
+  --pw-scrim: var(--color-love-wash-2);
+  --pw-scrim-alpha: 35%;
+  --pw-stripe-a: var(--color-main);
+  --pw-stripe-b: var(--color-love-line);
   --pw-title: 'bebas_neueregular', 'Impact', sans-serif;
   --pw-star: polygon(
     50% 0%,
@@ -44,6 +54,21 @@
   );
 }
 
+/* Dark: the yellow sheet becomes a dark card with a yellow outline. */
+.dark .pw-overlay,
+.dark .pw-pill {
+  --pw-line: var(--color-main);
+  --pw-paper: var(--color-surface);
+  --pw-card: var(--color-cardbg);
+  --pw-hot-text: var(--color-love-text);
+  --pw-focus: var(--color-love);
+  --pw-title-shadow: var(--color-love-hot);
+  --pw-scrim: var(--color-love-night);
+  --pw-scrim-alpha: 72%;
+  --pw-stripe-a: color-mix(in srgb, var(--color-main) 30%, var(--pw-card));
+  --pw-stripe-b: color-mix(in srgb, var(--color-love) 25%, var(--pw-card));
+}
+
 .pw-sr {
   position: absolute;
   width: 1px;
@@ -68,10 +93,10 @@
   background:
     radial-gradient(
       circle at 50% 30%,
-      rgb(255 95 162 / 0.45),
-      rgb(124 58 237 / 0.3) 70%
+      color-mix(in srgb, var(--color-love) 45%, transparent),
+      color-mix(in srgb, var(--color-love-violet) 30%, transparent) 70%
     ),
-    rgb(255 227 240 / 0.35);
+    color-mix(in srgb, var(--pw-scrim) var(--pw-scrim-alpha), transparent);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   animation: pw-fade 0.25s ease-out both;
@@ -82,12 +107,15 @@
   width: min(28rem, 92vw);
   color: var(--pw-ink);
   background:
-    radial-gradient(rgb(255 95 162 / 0.2) 1.5px, transparent 1.7px) 0 0 / 14px
-      14px,
-    var(--pw-yellow);
-  border: 3px solid var(--pw-navy);
+    radial-gradient(
+        color-mix(in srgb, var(--color-love) 20%, transparent) 1.5px,
+        transparent 1.7px
+      )
+      0 0 / 14px 14px,
+    var(--pw-paper);
+  border: 3px solid var(--pw-line);
   border-radius: 22px;
-  box-shadow: 6px 6px 0 var(--pw-navy);
+  box-shadow: 6px 6px 0 var(--pw-line);
   transform: rotate(-1.2deg);
   animation: pw-boing 0.75s cubic-bezier(0.3, 1.4, 0.5, 1) both;
 }
@@ -96,7 +124,7 @@
   outline: none;
 }
 .pw-sheet:focus-visible {
-  outline: 3px dashed var(--pw-purple);
+  outline: 3px dashed var(--pw-focus);
   outline-offset: 4px;
 }
 
@@ -118,12 +146,12 @@
   place-items: center;
   width: 2rem;
   height: 2rem;
-  border: 2px solid var(--pw-navy);
+  border: 2px solid var(--pw-line);
   border-radius: 999px;
-  background: #fff;
-  color: var(--pw-navy);
+  background: var(--pw-card);
+  color: var(--pw-ink);
   font-weight: bold;
-  box-shadow: 2px 2px 0 var(--pw-navy);
+  box-shadow: 2px 2px 0 var(--pw-line);
   cursor: pointer;
   transition: transform 0.15s ease;
 }
@@ -132,7 +160,7 @@
 }
 
 .pw-overlay :focus-visible {
-  outline: 3px solid var(--pw-purple);
+  outline: 3px solid var(--pw-focus);
   outline-offset: 2px;
 }
 
@@ -142,8 +170,8 @@
   font-size: clamp(1.9rem, 8vw, 2.5rem);
   line-height: 0.95;
   letter-spacing: 0.02em;
-  color: var(--pw-navy);
-  text-shadow: 3px 3px 0 #fff;
+  color: var(--pw-ink);
+  text-shadow: 3px 3px 0 var(--pw-title-shadow);
 }
 
 .pw-subtitle {
@@ -172,7 +200,7 @@
 }
 .pw-burst::before {
   inset: 0;
-  background: var(--pw-navy);
+  background: var(--pw-line);
 }
 .pw-burst::after {
   inset: 3px;
@@ -181,7 +209,7 @@
 .pw-burst > span {
   position: relative;
   z-index: 1;
-  color: var(--pw-burst-ink, var(--pw-navy));
+  color: var(--pw-burst-ink, var(--pw-on-yellow));
 }
 
 .pw-burst--wow {
@@ -228,14 +256,14 @@
   top: -0.75rem;
   left: 0.6rem;
   padding: 0.15rem 0.5rem;
-  border: 2px solid var(--pw-navy);
+  border: 2px solid var(--pw-line);
   border-radius: 6px;
   background: var(--pw-purple);
   color: #fff;
   font-size: 0.7rem;
   font-weight: bold;
   white-space: nowrap;
-  box-shadow: 2px 2px 0 var(--pw-navy);
+  box-shadow: 2px 2px 0 var(--pw-line);
   transform: rotate(-4deg);
 }
 .pw-product:nth-child(odd) .pw-sticker {
@@ -281,13 +309,13 @@
   display: flex;
   align-items: center;
   padding: 0.45rem 0.7rem;
-  border: 3px solid var(--pw-navy);
+  border: 3px solid var(--pw-line);
   border-radius: 16px;
-  background: #fff;
+  background: var(--pw-card);
   font-size: 0.82rem;
   font-weight: bold;
   line-height: 1.3;
-  box-shadow: 3px 3px 0 var(--pw-navy);
+  box-shadow: 3px 3px 0 var(--pw-line);
   animation: pw-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 .pw-bubble::before {
@@ -298,9 +326,9 @@
   width: 16px;
   height: 16px;
   margin-top: -8px;
-  background: #fff;
-  border-left: 3px solid var(--pw-navy);
-  border-bottom: 3px solid var(--pw-navy);
+  background: var(--pw-card);
+  border-left: 3px solid var(--pw-line);
+  border-bottom: 3px solid var(--pw-line);
   transform: rotate(45deg);
 }
 
@@ -315,6 +343,7 @@
   padding: 0.3rem 0.6rem;
   border-radius: 8px;
   background: var(--pw-navy);
+  box-shadow: inset 0 0 0 2px var(--pw-line);
   color: var(--pw-yellow);
   font-family: var(--pw-title);
   font-size: 1.3rem;
@@ -348,10 +377,10 @@
   align-items: center;
   gap: 0.6rem;
   padding: 0.85rem 0.7rem 0.7rem;
-  border: 3px solid var(--pw-navy);
+  border: 3px solid var(--pw-line);
   border-radius: 14px;
-  background: #fff;
-  box-shadow: 4px 4px 0 var(--pw-navy);
+  background: var(--pw-card);
+  box-shadow: 4px 4px 0 var(--pw-line);
   cursor: pointer;
   transition:
     transform 0.15s ease,
@@ -384,7 +413,7 @@
   place-items: center;
   width: 1.6rem;
   height: 1.6rem;
-  border: 2px solid var(--pw-navy);
+  border: 2px solid var(--pw-line);
   border-radius: 999px;
   background: var(--pw-hot);
   color: #fff;
@@ -411,7 +440,7 @@
   font-size: 1.35rem;
   line-height: 1;
   letter-spacing: 0.02em;
-  color: var(--pw-navy);
+  color: var(--pw-ink);
 }
 .pw-product__desc {
   font-size: 0.75rem;
@@ -433,14 +462,14 @@
   font-family: var(--pw-title);
   font-size: 1.05rem;
   line-height: 1.05;
-  color: var(--pw-hot);
+  color: var(--pw-hot-text);
 }
 .pw-was {
   font-size: 0.65rem;
   font-weight: bold;
-  color: var(--pw-navy);
+  color: var(--pw-ink);
   text-decoration-thickness: 2px;
-  text-decoration-color: var(--pw-hot);
+  text-decoration-color: var(--pw-hot-text);
 }
 
 /* ---------- QuivrCoin ---------- */
@@ -461,17 +490,17 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  border: 0.09em solid #8a5a00;
+  border: 0.09em solid var(--color-coin-edge);
   border-radius: 999px;
   background: radial-gradient(
     circle at 35% 30%,
-    #fff6c4 0 12%,
-    var(--pw-yellow) 35%,
-    var(--pw-gold) 75%,
-    #c98a00
+    color-mix(in srgb, var(--color-coin) 25%, white) 0 12%,
+    var(--color-main) 35%,
+    var(--color-coin) 75%,
+    color-mix(in srgb, var(--color-coin) 75%, var(--color-coin-edge))
   );
-  box-shadow: inset 0 0 0 0.08em rgb(255 255 255 / 0.55);
-  color: #7a4b00;
+  box-shadow: inset 0 0 0 0.08em color-mix(in srgb, white 55%, transparent);
+  color: var(--color-coin-ink);
   font-family: var(--pw-title);
   font-size: 0.8em;
   line-height: 1;
@@ -485,7 +514,7 @@
   background: linear-gradient(
     115deg,
     transparent 40%,
-    rgb(255 255 255 / 0.85) 50%,
+    color-mix(in srgb, white 85%, transparent) 50%,
     transparent 60%
   );
   transform: translateX(-120%);
@@ -508,7 +537,7 @@
   min-height: 3.6rem;
   overflow: hidden;
   padding: 0.5rem 0.8rem;
-  border: 3px solid var(--pw-navy);
+  border: 3px solid var(--pw-line);
   border-radius: 16px;
   background: var(--pw-hot);
   color: #fff;
@@ -516,7 +545,7 @@
   font-size: clamp(1.4rem, 6vw, 1.9rem);
   line-height: 1.05;
   letter-spacing: 0.03em;
-  box-shadow: 5px 5px 0 var(--pw-navy);
+  box-shadow: 5px 5px 0 var(--pw-line);
   cursor: pointer;
   animation: pw-wiggle 3.4s ease-in-out 1s infinite;
   transition: box-shadow 0.1s ease;
@@ -525,7 +554,7 @@
   animation: pw-pulse 0.6s ease-in-out infinite alternate;
 }
 .pw-buy:active {
-  box-shadow: 1px 1px 0 var(--pw-navy);
+  box-shadow: 1px 1px 0 var(--pw-line);
 }
 .pw-buy__label {
   display: inline-flex;
@@ -536,8 +565,8 @@
 }
 
 .pw-buy[data-paying] {
-  background: #fff;
-  color: var(--pw-navy);
+  background: var(--pw-card);
+  color: var(--pw-ink);
   cursor: progress;
   animation: none;
 }
@@ -546,8 +575,8 @@
   inset: 0;
   background: repeating-linear-gradient(
     -45deg,
-    var(--pw-yellow) 0 14px,
-    #ffc2dc 14px 28px
+    var(--pw-stripe-a) 0 14px,
+    var(--pw-stripe-b) 14px 28px
   );
   transform-origin: left;
   animation: pw-fill var(--pw-checkout-ms, 2.2s) linear both;
@@ -571,14 +600,14 @@
   padding: 0.25rem;
   border: 0;
   background: none;
-  color: var(--pw-navy);
+  color: var(--pw-ink);
   font-size: 0.78rem;
   text-decoration: underline;
   text-underline-offset: 2px;
   cursor: pointer;
 }
 .pw-link:hover {
-  color: var(--pw-hot);
+  color: var(--pw-hot-text);
 }
 .pw-decline {
   margin-top: 0.8rem;
@@ -605,8 +634,8 @@
   font-family: var(--pw-title);
   font-size: clamp(2.6rem, 12vw, 3.4rem);
   line-height: 1;
-  color: var(--pw-hot);
-  text-shadow: 3px 3px 0 var(--pw-navy);
+  color: var(--pw-hot-text);
+  text-shadow: 3px 3px 0 var(--pw-line);
   animation: pw-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 .pw-owned {
@@ -618,7 +647,7 @@
   height: 10px;
   margin: 0 0.6rem;
   border-radius: 999px;
-  background: var(--pw-navy);
+  background: var(--pw-line);
 }
 .pw-receipt-slot {
   margin: -4px 1.3rem 0;
@@ -628,12 +657,14 @@
 .pw-receipt {
   position: relative;
   padding: 0.9rem 0.9rem 0.6rem;
-  background: #fff;
+  background: var(--pw-card);
   color: var(--pw-ink);
   font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
   font-size: 0.72rem;
   text-align: left;
-  filter: drop-shadow(4px 4px 0 rgb(52 73 94 / 0.35));
+  filter: drop-shadow(
+    4px 4px 0 color-mix(in srgb, var(--pw-line) 35%, transparent)
+  );
   animation: pw-print 1.4s ease-out 0.2s both;
 }
 .pw-receipt::after {
@@ -643,8 +674,12 @@
   left: 0;
   right: 0;
   height: 8px;
-  background: conic-gradient(from -45deg at bottom, #fff 90deg, #0000 0) 0 0 /
-    16px 100%;
+  background: conic-gradient(
+      from -45deg at bottom,
+      var(--pw-card) 90deg,
+      #0000 0
+    )
+    0 0 / 16px 100%;
 }
 .pw-receipt__head {
   margin: 0 0 0.5rem;
@@ -664,7 +699,7 @@
 .pw-receipt__total {
   margin-top: 0.5rem;
   padding-top: 0.5rem;
-  border-top: 2px dashed var(--pw-navy);
+  border-top: 2px dashed var(--pw-line);
   font-weight: bold;
 }
 .pw-receipt__foot {
@@ -704,7 +739,7 @@
   padding: 0 0.25rem 0 0.65rem;
   border: 2px solid var(--pw-yellow);
   border-radius: 999px;
-  background: rgb(255 255 255 / 0.08);
+  background: color-mix(in srgb, white 8%, transparent);
   color: #fff;
   font-size: 0.8rem;
   font-weight: bold;
@@ -716,7 +751,7 @@
     background-color 0.2s ease;
 }
 .pw-pill:hover {
-  background: rgb(255 215 80 / 0.2);
+  background: color-mix(in srgb, var(--pw-yellow) 20%, transparent);
   transform: rotate(-3deg) scale(1.06);
 }
 .pw-pill:focus-visible {
@@ -726,7 +761,7 @@
 .pw-pill--vip {
   border-color: #fff;
   background: linear-gradient(90deg, var(--pw-yellow), var(--pw-pink));
-  color: var(--pw-ink);
+  color: var(--pw-on-yellow);
 }
 .pw-pill--vip:hover {
   background: linear-gradient(90deg, var(--pw-yellow), var(--pw-pink));
@@ -746,7 +781,7 @@
   font-variant-numeric: tabular-nums;
 }
 .pw-pill__num--empty {
-  color: #ff9cc8;
+  color: color-mix(in srgb, var(--color-love) 60%, white);
 }
 .pw-pill__shop {
   display: grid;
