@@ -49,7 +49,7 @@ yarn eval        # runs the agent on fixtures, needs ANTHROPIC_API_KEY
 just doctor      # checks env, Anthropic, Quivr login and the MCP server
 ```
 
-With `just dev` running, the MCP server restarts on save and the agent picks up the new tool list on the next message. Try a tool alone with `just inspector`.
+With `just dev` running, the MCP server restarts on save and the agent picks up the new tool list on the next message. Editing a `.graphql` file regenerates `__generated__/graphql.ts`, so step 2 (`just gql-gen`) is only needed outside `just dev`. Try a tool alone with `just inspector`.
 
 ## Rules
 

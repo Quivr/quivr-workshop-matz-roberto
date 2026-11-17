@@ -63,7 +63,9 @@ doctor:
 ########################################################################################################
 # Development
 ########################################################################################################
-# Start mcp (3002), agent (3001) and frontend (http://localhost:5173) in watch mode
+# Start mcp (3002), agent (3001) and frontend (http://localhost:5173) in watch mode.
+# Everything reloads on save: TypeScript restarts the servers, Vite hot-reloads the UI,
+# and editing a .graphql query regenerates the types. A crashed process restarts itself.
 [group('dev')]
 dev:
     yarn dev

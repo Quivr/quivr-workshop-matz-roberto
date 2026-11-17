@@ -33,6 +33,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "codegen": "graphql-codegen --config codegen.yml",
+    "codegen:watch": "tsx scripts/codegen-watch.ts",
     "login": "tsx scripts/login.ts",
     "logout": "tsx scripts/logout.ts",
     "record-fixtures": "tsx scripts/record-fixtures.ts",
