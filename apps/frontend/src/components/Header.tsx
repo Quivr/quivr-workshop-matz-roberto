@@ -1,10 +1,11 @@
 type Props = {
   models: string[]
   model: string
-  isShowingTraces: boolean
   onModelChange: (model: string) => void
-  onNewChat: () => void
-  onToggleTraces: () => void
+  isShowingTraces?: boolean
+  onNewChat?: () => void
+  onToggleTraces?: () => void
+  onHome?: () => void
 }
 
 const buttonClass = 'rounded px-2 py-1 text-sm hover:bg-sidenav-secondary'
@@ -12,13 +13,23 @@ const buttonClass = 'rounded px-2 py-1 text-sm hover:bg-sidenav-secondary'
 export function Header({
   models,
   model,
-  isShowingTraces,
+  isShowingTraces = false,
   onModelChange,
   onNewChat,
   onToggleTraces,
+  onHome,
 }: Props) {
   return (
     <header className="bg-sidenav-blue flex flex-wrap items-center gap-3 px-4 py-2 text-white">
+      {onHome && (
+        <button
+          type="button"
+          onClick={onHome}
+          className={buttonClass}
+        >
+          ← Home
+        </button>
+      )}
       <img
         src="/logo.svg"
         alt=""
@@ -42,20 +53,24 @@ export function Header({
           </option>
         ))}
       </select>
-      <button
-        type="button"
-        onClick={onToggleTraces}
-        className={buttonClass}
-      >
-        {isShowingTraces ? 'Chat' : 'Traces'}
-      </button>
-      <button
-        type="button"
-        onClick={onNewChat}
-        className={buttonClass}
-      >
-        New chat
-      </button>
+      {onToggleTraces && (
+        <button
+          type="button"
+          onClick={onToggleTraces}
+          className={buttonClass}
+        >
+          {isShowingTraces ? 'Chat' : 'Traces'}
+        </button>
+      )}
+      {onNewChat && (
+        <button
+          type="button"
+          onClick={onNewChat}
+          className={buttonClass}
+        >
+          New chat
+        </button>
+      )}
     </header>
   )
 }
