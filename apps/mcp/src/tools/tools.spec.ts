@@ -520,14 +520,22 @@ describe('find_matches', () => {
     )) as {
       demo: boolean
       center: { area: string }
-      matches: { firstName: string; score: number; reasons: string[] }[]
+      matches: {
+        firstName: string
+        score: number
+        featured: boolean
+        reasons: string[]
+      }[]
     }
 
     expect(result.demo).toBe(true)
     expect(result.center.area).toBe('arenberg')
     expect(result.matches[0]).toMatchObject({ firstName: 'Lotte' })
     expect(result.matches[0]?.reasons.join(' ')).toMatch(/Databases/)
-    const scores = result.matches.map(match => match.score)
+    // The featured profile is pinned in third place; the rest stay ranked.
+    const scores = result.matches
+      .filter(match => !match.featured)
+      .map(match => match.score)
     expect(scores).toEqual([...scores].sort((a, b) => b - a))
   })
 
