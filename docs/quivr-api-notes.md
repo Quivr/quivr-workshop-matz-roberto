@@ -89,3 +89,13 @@ The two mutations only work with `QUIVR_READ_ONLY=false`.
 - **No Docker.** Participants run Quivr natively (rbenv, fnm/nvm, WSL on Windows), so we do too.
 - **Vitest instead of Evalite.** Evalite 0.19 pins Vitest 4 internals and the AI SDK v5 provider package, and needs `better-sqlite3`, which compiles from source on Node 24. A ~100-line Vitest runner with `@vitest/ui` does the job.
 - **teach's backend is not used.** teach bridges AG-UI to the Agent Client Protocol, which is too heavy here. We only follow its AG-UI client usage (`@ag-ui/client` `HttpAgent`).
+
+## Re-recording fixtures
+
+`just record-fixtures` needs a real login and writes real data through `scripts/anonymise.ts`. Things to know:
+
+- **`MySchedule.json` is not purely recorded.** Recorded days are often empty, so `scripts/fictional-lessons.ts` fills empty days after the recording day (+1 to +3) with fictional lessons (ids `fictional-*`). `get_classmates` and its evals need them. Change them in that file, not in the JSON. Days that have real lessons are never touched.
+- **Friends are capped at 8** and replaced by fictional people (Lotte Voorbeeld, Max Mockdata, …). The same real friend gets the same fake id and name in `FriendList.json` and `FriendSchedules.json`, and in the `friendIds` of the fixture keys. Friend payloads are rebuilt from an allowlist of fields. A friend's item title or room is kept only when it is a lesson or room from your own schedule; anything else becomes a stand-in (`Study session`, `Fictional place 1`, …).
+- **After a re-record the friend data is no longer the hand-written demo set**, so the classmates evals still run but may find no overlaps.
+- `Me.json` is not recorded: it is the fictional student and stays as it is.
+- `yarn test` includes `scripts/fixtures-privacy.spec.ts`, which fails when a fixture contains a name, id, title or place that is not fictional. Run it before committing re-recorded fixtures.
