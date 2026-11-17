@@ -16,17 +16,92 @@
   },
   "{\"timeRange\":{\"endTime\":\"2026-11-17T23:59:59+01:00\",\"startTime\":\"2026-11-17T00:00:00+01:00\"}}": {
     "scheduleItems": {
-      "scheduleItems": []
+      "scheduleItems": [
+        {
+          "__typename": "Lesson",
+          "id": "fx-1",
+          "title": "Databases",
+          "startTime": "2026-11-17T09:00:00+01:00",
+          "endTime": "2026-11-17T11:00:00+01:00",
+          "locations": [
+            {
+              "name": "V1.12",
+              "address": null
+            }
+          ],
+          "teachers": [
+            {
+              "name": "Prof. Voorbeeld"
+            }
+          ]
+        },
+        {
+          "__typename": "Lesson",
+          "id": "fx-2",
+          "title": "Web Development",
+          "startTime": "2026-11-17T13:00:00+01:00",
+          "endTime": "2026-11-17T15:00:00+01:00",
+          "locations": [
+            {
+              "name": "Aula B",
+              "address": null
+            }
+          ],
+          "teachers": [
+            {
+              "name": "Prof. Voorbeeld"
+            }
+          ]
+        }
+      ]
     }
   },
   "{\"timeRange\":{\"endTime\":\"2026-11-18T23:59:59+01:00\",\"startTime\":\"2026-11-18T00:00:00+01:00\"}}": {
     "scheduleItems": {
-      "scheduleItems": []
+      "scheduleItems": [
+        {
+          "__typename": "Lesson",
+          "id": "fx-3",
+          "title": "Databases Lab",
+          "startTime": "2026-11-18T10:00:00+01:00",
+          "endTime": "2026-11-18T12:00:00+01:00",
+          "locations": [
+            {
+              "name": "Lab 3",
+              "address": null
+            }
+          ],
+          "teachers": [
+            {
+              "name": "Prof. Voorbeeld"
+            }
+          ]
+        }
+      ]
     }
   },
   "{\"timeRange\":{\"endTime\":\"2026-11-19T23:59:59+01:00\",\"startTime\":\"2026-11-19T00:00:00+01:00\"}}": {
     "scheduleItems": {
-      "scheduleItems": []
+      "scheduleItems": [
+        {
+          "__typename": "Lesson",
+          "id": "fx-4",
+          "title": "Statistics",
+          "startTime": "2026-11-19T14:00:00+01:00",
+          "endTime": "2026-11-19T16:00:00+01:00",
+          "locations": [
+            {
+              "name": "Room 2.01",
+              "address": null
+            }
+          ],
+          "teachers": [
+            {
+              "name": "Prof. Voorbeeld"
+            }
+          ]
+        }
+      ]
     }
   },
   "{\"timeRange\":{\"endTime\":\"2026-11-20T23:59:59+01:00\",\"startTime\":\"2026-11-20T00:00:00+01:00\"}}": {

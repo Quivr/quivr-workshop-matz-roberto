@@ -31,6 +31,7 @@ The Quivr frontend does the same in `scripts/graphql-login.mjs`. Our version is 
 | `list_restaurants`      | `restaurants`                                                    | No campus field: use `location { name address }`.                                                                                          |
 | `get_menu`              | `restaurants(ids) { dishes(timeRange) openingHours(timeRange) }` | `Dish`: `name`, `mealCategory`, `prices` (student price first), `vegetarian`, `vegan`, `allergens`.                                        |
 | `get_library_occupancy` | `libraries { data { occupancy capacity timestamp } }`            | `data` can be null for a library without sensors.                                                                                          |
+| `get_classmates`        | `friendList`, `friendSchedules(friendIds, timeRange)`            | No class roster in Quivr: overlaps the student's day with friends' shared schedules. Skips all-day items.                                  |
 
 `TimeRangeInput` is `{ startTime: Time!, endTime: Time! }` with ISO 8601 times. We send Brussels day boundaries with the offset, for example `2026-11-13T00:00:00+01:00`.
 

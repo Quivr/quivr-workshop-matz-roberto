@@ -10,6 +10,8 @@ import {
   type QuivrCredentials,
 } from '../config.js'
 import type {
+  FriendListQuery,
+  FriendSchedulesQuery,
   LibrariesQuery,
   MeQuery,
   MenuQuery,
@@ -59,6 +61,20 @@ export class QuivrClient {
 
   getStudentCard(): Promise<MeQuery> {
     return this.request('Me', {})
+  }
+
+  getFriends(): Promise<FriendListQuery> {
+    return this.request('FriendList', {})
+  }
+
+  getFriendSchedules(
+    friendIds: string[],
+    date: string
+  ): Promise<FriendSchedulesQuery> {
+    return this.request('FriendSchedules', {
+      friendIds,
+      timeRange: dayRange(date),
+    })
   }
 
   async request<T>(operationName: string, variables: object): Promise<T> {

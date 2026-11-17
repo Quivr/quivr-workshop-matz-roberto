@@ -1,0 +1,334 @@
+{
+  "{\"friendIds\":[\"9001\",\"9002\",\"9003\"],\"timeRange\":{\"endTime\":\"2026-11-14T23:59:59+01:00\",\"startTime\":\"2026-11-14T00:00:00+01:00\"}}": {
+    "friendSchedules": [
+      {
+        "friendId": "9001",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9002",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9003",
+        "scheduleItems": []
+      }
+    ]
+  },
+  "{\"friendIds\":[\"9001\",\"9002\",\"9003\"],\"timeRange\":{\"endTime\":\"2026-11-15T23:59:59+01:00\",\"startTime\":\"2026-11-15T00:00:00+01:00\"}}": {
+    "friendSchedules": [
+      {
+        "friendId": "9001",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9002",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9003",
+        "scheduleItems": []
+      }
+    ]
+  },
+  "{\"friendIds\":[\"9001\",\"9002\",\"9003\"],\"timeRange\":{\"endTime\":\"2026-11-16T23:59:59+01:00\",\"startTime\":\"2026-11-16T00:00:00+01:00\"}}": {
+    "friendSchedules": [
+      {
+        "friendId": "9001",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9002",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9003",
+        "scheduleItems": []
+      }
+    ]
+  },
+  "{\"friendIds\":[\"9001\",\"9002\",\"9003\"],\"timeRange\":{\"endTime\":\"2026-11-17T23:59:59+01:00\",\"startTime\":\"2026-11-17T00:00:00+01:00\"}}": {
+    "friendSchedules": [
+      {
+        "friendId": "9001",
+        "scheduleItems": [
+          {
+            "id": "f1",
+            "title": "Databases",
+            "startTime": "2026-11-17T09:00:00+01:00",
+            "endTime": "2026-11-17T11:00:00+01:00",
+            "allDay": false,
+            "locations": [
+              {
+                "name": "V1.12"
+              }
+            ]
+          },
+          {
+            "id": "f2",
+            "title": "Algorithms",
+            "startTime": "2026-11-17T11:00:00+01:00",
+            "endTime": "2026-11-17T13:00:00+01:00",
+            "allDay": false,
+            "locations": [
+              {
+                "name": "V1.20"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "friendId": "9002",
+        "scheduleItems": [
+          {
+            "id": "f3",
+            "title": "Databases",
+            "startTime": "2026-11-17T10:00:00+01:00",
+            "endTime": "2026-11-17T12:00:00+01:00",
+            "allDay": false,
+            "locations": [
+              {
+                "name": "V1.14"
+              }
+            ]
+          },
+          {
+            "id": "f4",
+            "title": "Web Development",
+            "startTime": "2026-11-17T14:00:00+01:00",
+            "endTime": "2026-11-17T16:00:00+01:00",
+            "allDay": false,
+            "locations": [
+              {
+                "name": "Aula B"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "friendId": "9003",
+        "scheduleItems": []
+      }
+    ]
+  },
+  "{\"friendIds\":[\"9001\",\"9002\",\"9003\"],\"timeRange\":{\"endTime\":\"2026-11-18T23:59:59+01:00\",\"startTime\":\"2026-11-18T00:00:00+01:00\"}}": {
+    "friendSchedules": [
+      {
+        "friendId": "9001",
+        "scheduleItems": [
+          {
+            "id": "f5",
+            "title": "Databases Lab",
+            "startTime": "2026-11-18T10:00:00+01:00",
+            "endTime": "2026-11-18T12:00:00+01:00",
+            "allDay": false,
+            "locations": [
+              {
+                "name": "Lab 3"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "friendId": "9002",
+        "scheduleItems": [
+          {
+            "id": "f6",
+            "title": "Study group",
+            "startTime": "2026-11-18T11:00:00+01:00",
+            "endTime": "2026-11-18T12:00:00+01:00",
+            "allDay": false,
+            "locations": [
+              {
+                "name": "Library"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "friendId": "9003",
+        "scheduleItems": []
+      }
+    ]
+  },
+  "{\"friendIds\":[\"9001\",\"9002\",\"9003\"],\"timeRange\":{\"endTime\":\"2026-11-19T23:59:59+01:00\",\"startTime\":\"2026-11-19T00:00:00+01:00\"}}": {
+    "friendSchedules": [
+      {
+        "friendId": "9001",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9002",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9003",
+        "scheduleItems": []
+      }
+    ]
+  },
+  "{\"friendIds\":[\"9001\",\"9002\",\"9003\"],\"timeRange\":{\"endTime\":\"2026-11-20T23:59:59+01:00\",\"startTime\":\"2026-11-20T00:00:00+01:00\"}}": {
+    "friendSchedules": [
+      {
+        "friendId": "9001",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9002",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9003",
+        "scheduleItems": []
+      }
+    ]
+  },
+  "{\"friendIds\":[\"9001\",\"9002\",\"9003\"],\"timeRange\":{\"endTime\":\"2026-11-21T23:59:59+01:00\",\"startTime\":\"2026-11-21T00:00:00+01:00\"}}": {
+    "friendSchedules": [
+      {
+        "friendId": "9001",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9002",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9003",
+        "scheduleItems": []
+      }
+    ]
+  },
+  "{\"friendIds\":[\"9001\",\"9002\",\"9003\"],\"timeRange\":{\"endTime\":\"2026-11-22T23:59:59+01:00\",\"startTime\":\"2026-11-22T00:00:00+01:00\"}}": {
+    "friendSchedules": [
+      {
+        "friendId": "9001",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9002",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9003",
+        "scheduleItems": []
+      }
+    ]
+  },
+  "{\"friendIds\":[\"9001\",\"9002\",\"9003\"],\"timeRange\":{\"endTime\":\"2026-11-23T23:59:59+01:00\",\"startTime\":\"2026-11-23T00:00:00+01:00\"}}": {
+    "friendSchedules": [
+      {
+        "friendId": "9001",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9002",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9003",
+        "scheduleItems": []
+      }
+    ]
+  },
+  "{\"friendIds\":[\"9001\",\"9002\",\"9003\"],\"timeRange\":{\"endTime\":\"2026-11-24T23:59:59+01:00\",\"startTime\":\"2026-11-24T00:00:00+01:00\"}}": {
+    "friendSchedules": [
+      {
+        "friendId": "9001",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9002",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9003",
+        "scheduleItems": []
+      }
+    ]
+  },
+  "{\"friendIds\":[\"9001\",\"9002\",\"9003\"],\"timeRange\":{\"endTime\":\"2026-11-25T23:59:59+01:00\",\"startTime\":\"2026-11-25T00:00:00+01:00\"}}": {
+    "friendSchedules": [
+      {
+        "friendId": "9001",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9002",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9003",
+        "scheduleItems": []
+      }
+    ]
+  },
+  "{\"friendIds\":[\"9001\",\"9002\",\"9003\"],\"timeRange\":{\"endTime\":\"2026-11-26T23:59:59+01:00\",\"startTime\":\"2026-11-26T00:00:00+01:00\"}}": {
+    "friendSchedules": [
+      {
+        "friendId": "9001",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9002",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9003",
+        "scheduleItems": []
+      }
+    ]
+  },
+  "{\"friendIds\":[\"9001\",\"9002\",\"9003\"],\"timeRange\":{\"endTime\":\"2026-11-27T23:59:59+01:00\",\"startTime\":\"2026-11-27T00:00:00+01:00\"}}": {
+    "friendSchedules": [
+      {
+        "friendId": "9001",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9002",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9003",
+        "scheduleItems": []
+      }
+    ]
+  },
+  "{\"friendIds\":[\"9001\",\"9002\",\"9003\"],\"timeRange\":{\"endTime\":\"2026-11-28T23:59:59+01:00\",\"startTime\":\"2026-11-28T00:00:00+01:00\"}}": {
+    "friendSchedules": [
+      {
+        "friendId": "9001",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9002",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9003",
+        "scheduleItems": []
+      }
+    ]
+  },
+  "{\"friendIds\":[\"9001\",\"9002\",\"9003\"],\"timeRange\":{\"endTime\":\"2026-11-29T23:59:59+01:00\",\"startTime\":\"2026-11-29T00:00:00+01:00\"}}": {
+    "friendSchedules": [
+      {
+        "friendId": "9001",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9002",
+        "scheduleItems": []
+      },
+      {
+        "friendId": "9003",
+        "scheduleItems": []
+      }
+    ]
+  }
+}

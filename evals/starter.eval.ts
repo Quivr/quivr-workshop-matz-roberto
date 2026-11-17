@@ -1,3 +1,5 @@
+import { addDays } from 'mcp/dates'
+
 import { defineEval, type EvalCase } from './lib/define-eval.js'
 import {
   findRestaurant,
@@ -70,6 +72,46 @@ const leastBusyLibraryCase = async (): Promise<EvalCase> => {
   }
 }
 
+const NO_ONE =
+  /(don't|do not|couldn't|could not|can't|cannot) (know|find|see)|no (one|friend|information)|nobody|none|not (share|sharing|shared)|doesn't|does not/i
+
+/** Friends sharing the title of the student's first class on a day. */
+const classmatesCase = async (
+  name: string,
+  date: string,
+  when: string
+): Promise<EvalCase> => {
+  const [mine] = (await fixtures.getMySchedule(date)).scheduleItems
+    .scheduleItems
+  const { friendList } = await fixtures.getFriends()
+  const { friendSchedules } = await fixtures.getFriendSchedules(
+    friendList.map(friend => friend.id),
+    date
+  )
+  const together = friendSchedules
+    .filter(schedule =>
+      schedule.scheduleItems.some(
+        item =>
+          item.title === mine?.title &&
+          item.locations?.[0]?.name === mine.locations?.[0]?.name
+      )
+    )
+    .map(
+      schedule =>
+        friendList.find(friend => friend.id === schedule.friendId)?.firstName ??
+        ''
+    )
+  return {
+    name,
+    question: `Which of my friends are in my ${mine?.title ?? 'first'} class ${when}?`,
+    expected: together.length
+      ? `${together.join(', ')} ${together.length > 1 ? 'are' : 'is'} in the same class. Only friends who share their schedule can be checked, so the answer is not a full class list.`
+      : `No friend who shares their schedule is in that class. The assistant does not know who else is in it.`,
+    facts: together.length ? together : [NO_ONE],
+    tools: ['get_classmates'],
+  }
+}
+
 const cases: EvalCase[] = [
   await nextClassCase(),
   await vegetarianCase('Alma 2', today(), 'today'),
@@ -107,6 +149,22 @@ const cases: EvalCase[] = [
       ? 'Lists the dishes at Alma 2 today and the next class with its location and time.'
       : 'Lists the dishes at Alma 2 today and says there are no upcoming classes in the schedule.',
     tools: ['get_menu', 'get_my_schedule'],
+  },
+  await classmatesCase('friends in my first class', tomorrow(), 'tomorrow'),
+  await classmatesCase(
+    'friends in a class nobody shares (must not invent)',
+    addDays(today(), 3),
+    `on ${addDays(today(), 3)}`
+  ),
+  {
+    name: 'full class roster (must not overclaim)',
+    question:
+      'Give me the full list of everyone enrolled in my Databases class.',
+    expected:
+      "The assistant says it cannot see the full class list and can only check which friends who share their schedule are in the class. It doesn't invent names of other students.",
+    facts: [
+      /(don't|do not|can't|cannot|couldn't|could not|unable|no way|not able)|only (see|check|friends)|friends who share/i,
+    ],
   },
 ]
 
