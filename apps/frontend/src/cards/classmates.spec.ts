@@ -97,6 +97,16 @@ describe('parseClassmates', () => {
     ).toEqual({ date: '2026-11-17', friendsChecked: 3, classes: [] })
   })
 
+  it('keeps long full names intact', () => {
+    const name = 'Charlotte Voorbeeld-Vanderexample van den Fictiestraat'
+    const parsed = parseClassmates({
+      classes: [
+        { title: 'Algebra', classmates: [{ name, isSameClass: true }] },
+      ],
+    })
+    expect(parsed?.classes[0]?.classmates[0]?.name).toBe(name)
+  })
+
   it('fills defaults for partial data and drops junk entries', () => {
     const parsed = parseClassmates({
       classes: [

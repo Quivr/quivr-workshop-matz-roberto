@@ -45,7 +45,7 @@ function SameClassChip({ classmate }: { classmate: Classmate }) {
   return (
     <li
       title={`${classmate.name} is in this class`}
-      className="bg-vegan text-on-diet max-w-full truncate rounded-full px-2 py-0.5 text-xs font-bold"
+      className="bg-vegan text-on-diet max-w-full rounded-2xl px-2 py-0.5 text-xs font-bold break-words"
     >
       {classmate.name}
     </li>
@@ -64,9 +64,14 @@ function BusyRow({ classmate }: { classmate: Classmate }) {
     .join(' · ')
 
   return (
-    <li className="flex gap-2 text-xs">
-      <span className="text-heading shrink-0 font-bold">{classmate.name}</span>
-      <span className="text-muted min-w-0 break-words">{where}</span>
+    <li className="min-w-0 text-xs">
+      <div
+        title={classmate.name}
+        className="text-heading font-bold break-words"
+      >
+        {classmate.name}
+      </div>
+      <div className="text-muted break-words">{where}</div>
     </li>
   )
 }
@@ -130,7 +135,7 @@ function ClassBlock({ slot }: { slot: ClassSlot }) {
                   classmate={c}
                 />
               )}
-              wrapper={children => <ul className="space-y-1">{children}</ul>}
+              wrapper={children => <ul className="space-y-1.5">{children}</ul>}
             />
           </div>
         )}
