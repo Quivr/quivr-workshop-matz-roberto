@@ -34,9 +34,9 @@ export function ScheduleCard({ result }: CardProps) {
     >
       {items.length === 0 && <p>Nothing scheduled.</p>}
       <ul className="space-y-1.5">
-        {items.map(item => (
+        {items.map((item, index) => (
           <li
-            key={`${item.start}-${item.title}`}
+            key={`${item.start}-${item.title}-${index}`}
             className="bg-schedule-bg-grey flex gap-3 rounded px-2 py-1.5"
           >
             <div className="w-24 shrink-0 text-xs">

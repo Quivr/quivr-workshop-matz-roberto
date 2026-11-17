@@ -307,7 +307,7 @@
   border-radius: 9px 9px 14px 14px;
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, white 28%, transparent),
+    color-mix(in srgb, white 10%, transparent),
     transparent
   );
   pointer-events: none;

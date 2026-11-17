@@ -235,7 +235,7 @@
 }
 
 .pw-burst--pick {
-  top: -1.4rem;
+  top: -1.7rem;
   right: -0.8rem;
   width: 3.9rem;
   height: 3.9rem;
@@ -452,6 +452,10 @@
   gap: 0.1rem;
   max-width: 6.5rem;
   text-align: right;
+}
+/* The PICK ME! burst covers the top-right corner: keep the price stack below it. */
+.pw-product--suggested .pw-product__price {
+  padding-top: 1.6rem;
 }
 .pw-price {
   display: inline-flex;
@@ -1015,7 +1019,9 @@
   .pw-overlay *::before,
   .pw-overlay *::after,
   .pw-pill,
-  .pw-pill * {
+  .pw-pill *,
+  .pw-pill *::before,
+  .pw-pill *::after {
     animation: none !important;
     transition: none !important;
   }

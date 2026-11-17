@@ -218,7 +218,7 @@ function Going({ names }: { names: string[] }) {
       >
         {names.slice(0, 4).map((name, i) => (
           <li
-            key={name}
+            key={`${name}-${i}`}
             title={name}
             className={`flex size-6 items-center justify-center rounded-full bg-linear-to-br text-[9px] font-bold text-white ring-2 ring-[#1e1846] ${
               AVATAR_GRADIENTS[i % AVATAR_GRADIENTS.length]
@@ -242,7 +242,7 @@ function Timeline({ events, date }: { events: CampusEvent[]; date: string }) {
       />
       {events.map((event, i) => (
         <li
-          key={`${event.title}-${event.start}`}
+          key={`${event.title}-${event.start}-${i}`}
           className="sc-rise relative pl-6"
           style={delay(0.15 + i * 0.12)}
         >
@@ -353,7 +353,7 @@ function Fakbars({
           const start = offset + i * 0.12
           return (
             <li
-              key={bar.name}
+              key={`${bar.name}-${i}`}
               className="sc-rise flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-3 py-2"
               style={delay(start)}
             >
