@@ -1,22 +1,16 @@
 import { useEffect, useState } from 'react'
 
-import { Composer } from './components/Composer'
-import { Header } from './components/Header'
-import { MessageList } from './components/MessageList'
-import { TracesPanel } from './components/TracesPanel'
-import { useAgentChat } from './useAgentChat'
+import { ArgumentScreen } from './screens/ArgumentScreen'
+import { ChatScreen } from './screens/ChatScreen'
+import { ChillScreen } from './screens/ChillScreen'
+import { HomeScreen } from './screens/HomeScreen'
 
-const EXAMPLES = [
-  "What's on the menu at Alma 2 today and where is my next class?",
-  'Which library is least busy right now?',
-  "What's vegetarian at the student restaurants tomorrow?",
-]
+export type Mode = 'home' | 'chat' | 'argument' | 'chill'
 
 export function App() {
-  const chat = useAgentChat()
+  const [mode, setMode] = useState<Mode>('home')
   const [models, setModels] = useState<string[]>([])
   const [model, setModel] = useState('')
-  const [isShowingTraces, setIsShowingTraces] = useState(false)
 
   useEffect(() => {
     fetch('/api/models')
@@ -31,58 +25,15 @@ export function App() {
       .catch(() => setModels([]))
   }, [])
 
-  const handleSend = (text: string) => void chat.send(text, model)
+  const screenProps = {
+    models,
+    model,
+    onModelChange: setModel,
+    onHome: () => setMode('home'),
+  }
 
-  return (
-    <div className="flex h-dvh flex-col">
-      <Header
-        models={models}
-        model={model}
-        isShowingTraces={isShowingTraces}
-        onModelChange={setModel}
-        onNewChat={chat.reset}
-        onToggleTraces={() => setIsShowingTraces(value => !value)}
-      />
-      <main className="mx-auto w-full max-w-3xl flex-1 overflow-y-auto p-4">
-        {isShowingTraces && <TracesPanel />}
-        {!isShowingTraces && chat.messages.length === 0 && (
-          <div className="space-y-2 pt-10 text-center">
-            <p className="font-title text-sidenav-blue text-3xl">
-              What do you want to know?
-            </p>
-            {EXAMPLES.map(example => (
-              <button
-                key={example}
-                type="button"
-                onClick={() => handleSend(example)}
-                className="hover:bg-cardbg block w-full rounded-md bg-white px-3 py-2 text-sm shadow-sm"
-              >
-                {example}
-              </button>
-            ))}
-          </div>
-        )}
-        {!isShowingTraces && (
-          <MessageList
-            messages={chat.messages}
-            durations={chat.durations}
-            isRunning={chat.isRunning}
-          />
-        )}
-        {chat.error && !isShowingTraces && (
-          <p className="bg-danger/10 text-danger mt-3 rounded-md px-3 py-2 text-sm">
-            {chat.error}
-          </p>
-        )}
-      </main>
-      {!isShowingTraces && (
-        <footer className="mx-auto w-full max-w-3xl p-4 pt-0">
-          <Composer
-            isDisabled={chat.isRunning || !model}
-            onSend={handleSend}
-          />
-        </footer>
-      )}
-    </div>
-  )
+  if (mode === 'chat') return <ChatScreen {...screenProps} />
+  if (mode === 'argument') return <ArgumentScreen {...screenProps} />
+  if (mode === 'chill') return <ChillScreen {...screenProps} />
+  return <HomeScreen onSelect={setMode} />
 }
