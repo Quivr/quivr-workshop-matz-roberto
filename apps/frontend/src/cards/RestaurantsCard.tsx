@@ -25,12 +25,12 @@ export function RestaurantsCard({ result }: CardProps) {
             <span>
               <span className="font-bold">{restaurant.name}</span>
               {restaurant.address && (
-                <span className="text-sidenav-secondary block text-xs">
+                <span className="text-muted block text-xs">
                   📍 {restaurant.address}
                 </span>
               )}
             </span>
-            <span className="text-sidenav-secondary bg-schedule-bg-grey shrink-0 rounded px-1.5 text-xs">
+            <span className="text-muted bg-schedule-bg-grey shrink-0 rounded px-1.5 text-xs">
               {restaurant.id}
             </span>
           </li>
