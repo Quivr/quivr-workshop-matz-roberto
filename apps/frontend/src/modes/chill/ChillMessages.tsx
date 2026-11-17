@@ -3,8 +3,8 @@ import type { Message } from '@ag-ui/core'
 import { ToolCard } from '../../cards/ToolCard'
 import { CharacterAvatar } from '../../characters/CharacterAvatar'
 import { Markdown } from '../../components/Markdown'
+import { SpeechBalloon } from '../../components/SpeechBalloon'
 import { RESPONDER_ID, SLEEPY_ID_PREFIX } from './script'
-import { SpeechBalloon } from './SpeechBalloon'
 
 type Props = {
   messages: Message[]
@@ -82,7 +82,7 @@ export function ChillMessages({ messages, durations, isRunning }: Props) {
                 />
                 <SpeechBalloon
                   isSpeaking={isStreaming}
-                  className="ml-1.5 max-w-[85%] sm:max-w-lg"
+                  className="ml-1.5 w-fit max-w-[85%] sm:max-w-lg"
                 >
                   <Markdown>{text}</Markdown>
                 </SpeechBalloon>
@@ -105,7 +105,7 @@ export function ChillMessages({ messages, durations, isRunning }: Props) {
           <span className="sr-only">Gus is thinking</span>
           <SpeechBalloon
             isSpeaking
-            className="ml-1.5"
+            className="ml-1.5 w-fit max-w-xs"
           >
             {null}
           </SpeechBalloon>

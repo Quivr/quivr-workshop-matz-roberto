@@ -3,9 +3,9 @@ import { useEffect, useRef, type ReactNode } from 'react'
 import { CharacterAvatar } from '../../characters/CharacterAvatar'
 import { getCharacter } from '../../characters/registry'
 import { Markdown } from '../../components/Markdown'
+import { SpeechBalloon } from '../../components/SpeechBalloon'
 import { useStickToBottom } from '../../components/useStickToBottom'
 import type { Row } from './rows'
-import { SpeechBalloon } from './SpeechBalloon'
 import { ToolGroup } from './ToolGroup'
 
 const AT_BOTTOM_PX = 48
@@ -53,6 +53,7 @@ function Speech({
         <SpeechBalloon
           side={side}
           isSpeaking={isSpeaking}
+          className="max-w-full min-w-0 text-sm sm:max-w-lg"
         >
           {children}
         </SpeechBalloon>

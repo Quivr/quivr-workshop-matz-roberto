@@ -3,9 +3,9 @@ import type { CSSProperties } from 'react'
 import { CharacterAvatar } from '../../characters/CharacterAvatar'
 import { charactersByRole, getCharacter } from '../../characters/registry'
 import type { CharacterClip } from '../../characters/types'
+import { SpeechBalloon } from '../../components/SpeechBalloon'
 import type { BreakSnapshot } from './breakController'
 import { BREAK_BANTER, type GagLine, type PipState } from './script'
-import { SpeechBalloon } from './SpeechBalloon'
 
 /*
  * The scene is 200px tall, back to front:
@@ -183,7 +183,7 @@ function Say({ name, line, className = '', style, balloonOn }: SayProps) {
         <SpeechBalloon
           key={line}
           side={balloonOn === 'right' ? 'left' : 'right'}
-          className="text-sm"
+          className="w-fit max-w-xs text-sm"
         >
           <span className="sr-only">{name} says: </span>
           {line}
