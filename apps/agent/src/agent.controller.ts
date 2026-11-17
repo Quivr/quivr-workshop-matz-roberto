@@ -6,6 +6,7 @@ import type { Request, Response } from 'express'
 import { toAgUiEvents } from './ag-ui.js'
 import { config } from './config.js'
 import { toModelMessages } from './messages.js'
+import { isCharacterId } from './personas.js'
 import { runAgent } from './run-agent.js'
 import { readTraces } from './traces.js'
 
@@ -20,7 +21,10 @@ export class AgentController {
       return
     }
     const input = parsed.data
-    const props = (input.forwardedProps ?? {}) as { model?: string }
+    const props = (input.forwardedProps ?? {}) as {
+      model?: string
+      characterId?: unknown
+    }
 
     const abort = new AbortController()
     res.on('close', () => abort.abort())
@@ -36,6 +40,9 @@ export class AgentController {
     const parts = runAgent({
       messages: toModelMessages(input.messages),
       model: props.model,
+      characterId: isCharacterId(props.characterId)
+        ? props.characterId
+        : undefined,
       abortSignal: abort.signal,
     })
     const ids = { threadId: input.threadId, runId: input.runId }
