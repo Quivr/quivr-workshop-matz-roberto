@@ -6,8 +6,13 @@ const TOOL_TIMING_EVENT = 'tool_timing'
 
 const newAgent = () => new HttpAgent({ url: '/api/agent' })
 
+export type UseAgentChatOptions = {
+  model?: string
+  characterId?: string
+}
+
 /** Chat state on top of an AG-UI HttpAgent. Memory only: "new chat" forgets everything. */
-export const useAgentChat = () => {
+export const useAgentChat = (options: UseAgentChatOptions = {}) => {
   const agentRef = useRef(newAgent())
   const [messages, setMessages] = useState<Message[]>([])
   const [isRunning, setIsRunning] = useState(false)
@@ -28,14 +33,18 @@ export const useAgentChat = () => {
     onRunFailed: ({ error }) => setError(error.message),
   }
 
-  const send = async (text: string, model: string) => {
+  const send = async (text: string, model?: string) => {
     const agent = agentRef.current
     agent.addMessage({ id: crypto.randomUUID(), role: 'user', content: text })
     setMessages([...agent.messages])
     setError(null)
     setIsRunning(true)
     try {
-      await agent.runAgent({ forwardedProps: { model } }, subscriber)
+      const { model: defaultModel, characterId } = options
+      await agent.runAgent(
+        { forwardedProps: { model: model ?? defaultModel, characterId } },
+        subscriber
+      )
     } catch (runError) {
       setError(runError instanceof Error ? runError.message : String(runError))
     } finally {

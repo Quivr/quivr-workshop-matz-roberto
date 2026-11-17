@@ -16,6 +16,8 @@ import { startTrace } from './traces.js'
 export type RunAgentOptions = {
   messages: ModelMessage[]
   model?: string
+  /** Persona id (see personas.ts). Unknown or missing means the neutral prompt. */
+  characterId?: string
   /** Overrides the clock, e.g. in evals. */
   now?: Date
   mcpUrl?: string
@@ -61,7 +63,10 @@ export async function* runAgent(
 
     const result = streamText({
       model,
-      instructions: buildInstructions(options.now ?? now()),
+      instructions: buildInstructions(
+        options.now ?? now(),
+        options.characterId
+      ),
       messages: options.messages,
       tools,
       stopWhen: isStepCount(config.maxSteps),
