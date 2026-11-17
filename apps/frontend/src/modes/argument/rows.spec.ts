@@ -32,6 +32,27 @@ const student = (text: string): ThreadItem => ({
 })
 
 describe('buildRows', () => {
+  it('gives every row its own id, also when one message has words and a tool call', () => {
+    const both: ThreadItem = {
+      message: {
+        id: 'm1',
+        role: 'assistant',
+        content: 'Let me look.',
+        toolCalls: [
+          {
+            id: 'c1',
+            type: 'function' as const,
+            function: { name: 'get_menu', arguments: '{}' },
+          },
+        ],
+      } as Message,
+      speaker: 'nova',
+    }
+    const ids = buildRows([both, result('c1', 'nova')], 'rex').map(r => r.id)
+    expect(ids).toHaveLength(3)
+    expect(new Set(ids).size).toBe(3)
+  })
+
   it('is empty for an empty thread', () => {
     expect(buildRows([], null)).toEqual([])
   })

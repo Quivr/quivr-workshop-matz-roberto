@@ -70,7 +70,7 @@ export const buildRows = (
     if (previous?.kind === 'tools' && previous.speaker === speaker) {
       previous.calls.push(...calls)
     } else {
-      rows.push({ kind: 'tools', id: message.id, speaker, calls })
+      rows.push({ kind: 'tools', id: `${message.id}-tools`, speaker, calls })
     }
   })
 
