@@ -1,12 +1,30 @@
 import { TOPICS, type Topic } from './messages'
-import { MAX_TURNS, type ArgumentState, type EndReason } from './turns'
+import { isActive, type ArgumentState, type EndReason } from './turns'
 
-const END_TEXT: Record<EndReason, string> = {
-  limit: `${MAX_TURNS} turns done. They are waiting for you: type below.`,
-  button: 'Stopped. Type below to ask one of them something.',
-  student: 'You stepped in. The argument is over.',
-  error: 'The argument broke off.',
-  empty: 'Not enough of them are around to argue.',
+const endText = (reason: EndReason, maxTurns: number | null): string => {
+  switch (reason) {
+    case 'limit':
+      return `${maxTurns} turns done. They are waiting for you: type below.`
+    case 'button':
+      return 'Stopped. Type below to ask one of them something.'
+    case 'error':
+      return 'The argument broke off.'
+    case 'empty':
+      return 'Not enough of them are around to argue.'
+  }
+}
+
+const liveText = (state: ArgumentState): string => {
+  switch (state.status) {
+    case 'answering':
+      return 'You stepped in. They are answering you…'
+    case 'calm':
+      return 'Calm for a moment… then they pick the fight back up.'
+    default:
+      return state.maxTurns === null
+        ? `Turn ${state.turn + 1} · ${state.topic} · they keep going until you stop them`
+        : `Turn ${state.turn + 1} of ${state.maxTurns} · ${state.topic}`
+  }
 }
 
 export const buttonClass =
@@ -23,7 +41,7 @@ type Props = {
   isBusy?: boolean
 }
 
-/** The argument's controls: pick a topic, turn counter and "Stop it!", then "New argument". */
+/** The argument's controls: pick a topic, then what they are up to and "Stop it!" (always there, it is the way to end it), then "New argument". */
 export function ArgumentBar({
   state,
   onStart,
@@ -52,18 +70,18 @@ export function ArgumentBar({
           ))}
         </>
       )}
-      {state.status === 'running' && (
+      {isActive(state) && (
         <>
           <span
             className="text-main-text text-sm"
             role="status"
           >
-            Turn {state.turn + 1} of {MAX_TURNS} · {state.topic}
+            {liveText(state)}
           </span>
           <button
             type="button"
             onClick={onStop}
-            className="border-danger text-danger bg-surface hover:bg-danger/10 rounded-md border-2 px-4 py-1.5 font-bold active:scale-95 motion-safe:transition"
+            className="border-danger text-danger bg-surface hover:bg-danger/10 rounded-md border-2 px-5 py-2 text-base font-bold active:scale-95 motion-safe:transition"
           >
             Stop it!
           </button>
@@ -75,7 +93,7 @@ export function ArgumentBar({
             className="text-main-text text-sm"
             role="status"
           >
-            {END_TEXT[state.endReason ?? 'error']}
+            {endText(state.endReason ?? 'error', state.maxTurns)}
             {state.error ? ` ${state.error}` : ''}
           </span>
           <button

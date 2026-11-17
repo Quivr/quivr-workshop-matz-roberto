@@ -28,7 +28,7 @@ export function ArgumentArena({ cast, model, onNewArgument }: Props) {
   const isArguing = state.status === 'running'
   const rows = buildThreadRows(thread, live)
   const isDisabled =
-    state.status === 'idle' || (state.status === 'ended' && isRunning)
+    state.status === 'idle' || (state.status !== 'running' && isRunning)
 
   return (
     <div className="mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col">
@@ -87,7 +87,7 @@ export function ArgumentArena({ cast, model, onNewArgument }: Props) {
           state.status === 'idle'
             ? 'Pick a topic first'
             : isArguing
-              ? 'Step in to stop the argument…'
+              ? 'Step in to calm them down…'
               : 'Ask them something…'
         }
         isDisabled={isDisabled}

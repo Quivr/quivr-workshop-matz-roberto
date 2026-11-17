@@ -24,4 +24,15 @@ describe('argumentClip', () => {
     expect(argumentClip(ended, 'nova', false)).toBe('calm')
     expect(argumentClip(ended, 'nova', true)).toBe('talking')
   })
+
+  it('calms down when the student steps in, then fights again', () => {
+    const answering = argumentReducer(running, { type: 'studentMessage' })
+    expect(argumentClip(answering, 'rex', false)).toBe('calm')
+    expect(argumentClip(answering, 'nova', true)).toBe('talking')
+    const calm = argumentReducer(answering, { type: 'answered' })
+    expect(argumentClip(calm, 'nova', false)).toBe('calm')
+    const resumed = argumentReducer(calm, { type: 'resume' })
+    expect(argumentClip(resumed, 'rex', false)).toBe('fight')
+    expect(argumentClip(resumed, 'nova', false)).toBe('argue')
+  })
 })

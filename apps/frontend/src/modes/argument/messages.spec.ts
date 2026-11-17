@@ -49,7 +49,8 @@ describe('turnInstruction', () => {
       })
       expect(content).toContain('must come from a tool result')
       expect(content).toContain('Never invent facts')
-      expect(content).toContain('turn 4 of 8')
+      expect(content).toContain('turn 4.')
+      expect(content).not.toContain('turn 4 of')
     }
   })
 
@@ -62,6 +63,25 @@ describe('turnInstruction', () => {
     })
     expect(first.content).toContain('You speak first')
     expect(later.content).toContain('Rex spoke last')
+  })
+
+  it('only mentions a turn limit when one is configured', () => {
+    expect(
+      turnInstruction({ ...base, turn: 3, maxTurns: 12 }).content
+    ).toContain('turn 4 of 12')
+  })
+
+  it('tells a character to pick the fight back up after the student stepped in', () => {
+    const { content } = turnInstruction({
+      ...base,
+      turn: 3,
+      previousSpeakerName: 'Rex',
+      resuming: true,
+    })
+    expect(content).toContain('picks up again')
+    expect(content).toContain('what the student just said')
+    expect(content).not.toContain('spoke last')
+    expect(content).toContain('must come from a tool result')
   })
 })
 

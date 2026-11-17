@@ -4,7 +4,6 @@ import { getCharacter } from '../../characters/registry'
 import {
   argumentReducer,
   initialState,
-  MAX_TURNS,
   type ArgumentAction,
   type ArgumentState,
 } from '../argument/turns'
@@ -55,13 +54,38 @@ describe('the clips on the stage', () => {
     })
   })
 
-  it('calms everybody down once it is over', () => {
-    const ended = argumentReducer(running, { type: 'studentMessage' })
+  it('calms everybody down once it is over, and while the student is answered', () => {
+    const ended = argumentReducer(running, { type: 'stop' })
     expect(Object.values(partyClips(ended, null))).toEqual([
       'calm',
       'calm',
       'calm',
     ])
+  })
+})
+
+describe('the clips when the student steps in', () => {
+  const running = argumentReducer(fresh(), { type: 'start', topic: 'x' })
+  const answering = argumentReducer(running, { type: 'studentMessage' })
+
+  it('calms everybody except whoever answers, then winds them up again', () => {
+    expect(partyClips(answering, 'gus')).toEqual({
+      gus: 'talking',
+      bram: 'calm',
+      stien: 'calm',
+    })
+    const calm = argumentReducer(answering, { type: 'answered' })
+    expect(Object.values(partyClips(calm, null))).toEqual([
+      'calm',
+      'calm',
+      'calm',
+    ])
+    const resumed = argumentReducer(calm, { type: 'resume' })
+    expect(partyClips(resumed, null)).toEqual({
+      gus: 'argue',
+      bram: 'fight',
+      stien: 'argue',
+    })
   })
 })
 
@@ -128,33 +152,73 @@ describe('a break during an argument', () => {
     expect(get().speaker).toBe('gus')
   })
 
-  it('does not deadlock or skip the cap with Gus away the whole time', async () => {
+  it('does not deadlock with Gus away the whole time: it just goes on without a cap', async () => {
     const { controller, away, dispatch, finishTurn, get } = setup()
     controller.route('hi', { ask: () => Promise.resolve(), sleepy: vi.fn() })
     await vi.advanceTimersByTimeAsync(0)
     dispatch({ type: 'start', topic: 'x', away: away() })
     expect(get().speaker).toBe('bram')
 
-    let finished = 0
-    while (get().status === 'running') {
+    const spoken: (string | null)[] = []
+    for (let i = 0; i < 50; i++) {
       finishTurn()
-      finished += 1
-      expect(finished).toBeLessThanOrEqual(MAX_TURNS)
+      expect(get().status).toBe('running')
+      spoken.push(get().speaker)
     }
-    expect(get()).toMatchObject({
+    // Only Bram and Stien take turns, and every turn counts.
+    expect(new Set(spoken)).toEqual(new Set(['bram', 'stien']))
+    expect(get().turn).toBe(50)
+  })
+
+  it('with a limit set, skipped turns still do not count', async () => {
+    const limited = argumentReducer(initialState(PARTY_CAST, 6), {
+      type: 'start',
+      topic: 'x',
+      away: [ANSWERER_ID],
+    })
+    let state = limited
+    for (let i = 0; i < 6; i++) {
+      state = argumentReducer(state, {
+        type: 'turnFinished',
+        away: [ANSWERER_ID],
+      })
+    }
+    expect(state).toMatchObject({
       status: 'ended',
       endReason: 'limit',
-      turn: MAX_TURNS,
+      turn: 6,
     })
   })
 
-  it('still lets the student calm or stop it with Gus away', async () => {
+  it('still lets the student calm it, and Stop end it, with Gus away', async () => {
     const { controller, away, dispatch, get } = setup()
     controller.route('hi', { ask: () => Promise.resolve(), sleepy: vi.fn() })
     await vi.advanceTimersByTimeAsync(0)
     dispatch({ type: 'start', topic: 'x', away: away() })
     dispatch({ type: 'studentMessage' })
-    expect(get()).toMatchObject({ status: 'ended', endReason: 'student' })
+    expect(get()).toMatchObject({ status: 'answering', floor: 'bram' })
+    dispatch({ type: 'answered' })
+    dispatch({ type: 'resume', away: away() })
+    expect(get()).toMatchObject({ status: 'running', speaker: 'stien' })
+    dispatch({ type: 'stop' })
+    expect(get()).toMatchObject({ status: 'ended', endReason: 'button' })
+  })
+
+  it('takes Gus back into the order when the break ends during the calm beat', async () => {
+    const { controller, away, dispatch, get } = setup()
+    dispatch({ type: 'start', topic: 'x', away: away() })
+    dispatch({ type: 'turnFinished', away: away() })
+    expect(get().speaker).toBe('bram')
+    controller.route('hi', { ask: () => Promise.resolve(), sleepy: vi.fn() })
+    await vi.advanceTimersByTimeAsync(0)
+    expect(controller.getSnapshot().phase).toBe('break')
+    dispatch({ type: 'studentMessage' })
+    dispatch({ type: 'answered' })
+    await vi.advanceTimersByTimeAsync(BREAK_MS)
+    dispatch({ type: 'resume', away: away() })
+    expect(get().speaker).toBe('stien')
+    dispatch({ type: 'turnFinished', away: away() })
+    expect(get().speaker).toBe('gus')
   })
 
   it('counts a student message sent during the break as no message, and sends it to the sleepy branch', async () => {

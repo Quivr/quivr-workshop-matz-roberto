@@ -40,5 +40,5 @@ export const castStatus = (
   if (state.status === 'running') {
     return state.speaker === id ? 'has the floor' : 'arguing'
   }
-  return state.status === 'ended' ? 'calm' : 'ready'
+  return state.status === 'idle' ? 'ready' : 'calm'
 }
