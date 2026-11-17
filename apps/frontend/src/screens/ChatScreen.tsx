@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { Composer } from '../components/Composer'
 import { Header } from '../components/Header'
@@ -27,6 +27,9 @@ export function ChatScreen({
   const { scrollRef, contentRef, isAtBottom, scrollToBottom } =
     useStickToBottom<HTMLElement>()
 
+  const { abort } = chat
+  useEffect(() => abort, [abort])
+
   const handleSend = (text: string) => {
     scrollToBottom()
     void chat.send(text, model)
@@ -52,7 +55,7 @@ export function ChatScreen({
             {isShowingTraces && <TracesPanel />}
             {!isShowingTraces && chat.messages.length === 0 && (
               <div className="space-y-2 pt-10 text-center">
-                <p className="font-title text-sidenav-blue text-3xl">
+                <p className="font-title text-heading text-3xl">
                   What do you want to know?
                 </p>
                 {EXAMPLES.map(example => (
@@ -60,7 +63,7 @@ export function ChatScreen({
                     key={example}
                     type="button"
                     onClick={() => handleSend(example)}
-                    className="hover:bg-cardbg block w-full rounded-md bg-white px-3 py-2 text-sm shadow-sm"
+                    className="hover:bg-cardbg bg-surface block w-full rounded-md px-3 py-2 text-sm shadow-sm"
                   >
                     {example}
                   </button>

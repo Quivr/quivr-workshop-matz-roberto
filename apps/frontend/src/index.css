@@ -99,21 +99,6 @@
   --color-on-diet: #0f2a18;
 }
 
-/*
- * Bridges for components that still hardcode colours (App, Header,
- * MessageList). `:where` keeps specificity at .bg-white level so `hover:`
- * utilities still win. Delete once those files use `bg-surface` and
- * `text-heading`.
- */
-@layer utilities {
-  :where(.dark) .bg-white {
-    background-color: var(--color-surface);
-  }
-  :where(.dark) .text-sidenav-blue:not(.bg-main) {
-    color: var(--color-heading);
-  }
-}
-
 body {
   @apply bg-schedule-bg-grey text-main-text font-sans;
 }

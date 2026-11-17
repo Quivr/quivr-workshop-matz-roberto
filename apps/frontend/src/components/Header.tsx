@@ -1,3 +1,5 @@
+import { ThemeToggle } from '../theme/ThemeToggle'
+
 type Props = {
   models: string[]
   model: string
@@ -53,6 +55,7 @@ export function Header({
           </option>
         ))}
       </select>
+      <ThemeToggle />
       {onToggleTraces && (
         <button
           type="button"

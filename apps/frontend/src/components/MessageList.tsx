@@ -51,7 +51,7 @@ export function MessageList({ messages, durations, isRunning }: Props) {
               />
             ))}
             {message.content && (
-              <div className="motion-safe:animate-fade-up rounded-lg bg-white px-3 py-2 shadow-sm">
+              <div className="motion-safe:animate-fade-up bg-surface rounded-lg px-3 py-2 shadow-sm">
                 <Markdown>{message.content}</Markdown>
               </div>
             )}
