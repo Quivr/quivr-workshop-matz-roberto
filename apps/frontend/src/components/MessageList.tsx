@@ -28,7 +28,7 @@ export function MessageList({ messages, durations, isRunning }: Props) {
           return (
             <div
               key={message.id}
-              className="bg-main text-sidenav-blue ml-auto max-w-[80%] rounded-lg px-3 py-2 whitespace-pre-wrap"
+              className="bg-main text-sidenav-blue motion-safe:animate-fade-up ml-auto max-w-[80%] rounded-lg px-3 py-2 whitespace-pre-wrap"
             >
               {textOf(message.content)}
             </div>
@@ -51,14 +51,29 @@ export function MessageList({ messages, durations, isRunning }: Props) {
               />
             ))}
             {message.content && (
-              <div className="rounded-lg bg-white px-3 py-2 shadow-sm">
+              <div className="motion-safe:animate-fade-up rounded-lg bg-white px-3 py-2 shadow-sm">
                 <Markdown>{message.content}</Markdown>
               </div>
             )}
           </div>
         )
       })}
-      {isRunning && <div className="animate-pulse text-sm">Thinking…</div>}
+      {isRunning && (
+        <div
+          className="motion-safe:animate-fade-up flex items-center gap-1 text-sm"
+          role="status"
+        >
+          Thinking
+          {[0, 150, 300].map(delay => (
+            <span
+              key={delay}
+              aria-hidden
+              className="bg-sidenav-secondary motion-safe:animate-dot size-1.5 rounded-full"
+              style={{ animationDelay: `${delay}ms` }}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
