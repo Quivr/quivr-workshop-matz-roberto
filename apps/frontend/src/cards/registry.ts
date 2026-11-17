@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react'
 
+import { ClassmatesCard } from './ClassmatesCard'
 import { LibraryCard } from './LibraryCard'
 import { MenuCard } from './MenuCard'
 import { RestaurantsCard } from './RestaurantsCard'
@@ -14,4 +15,5 @@ export const cards: Record<string, ComponentType<CardProps>> = {
   list_restaurants: RestaurantsCard,
   get_library_occupancy: LibraryCard,
   get_student_card: StudentCard,
+  get_classmates: ClassmatesCard,
 }
