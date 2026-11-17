@@ -37,6 +37,7 @@
     "login": "tsx scripts/login.ts",
     "logout": "tsx scripts/logout.ts",
     "record-fixtures": "tsx scripts/record-fixtures.ts",
+    "fake-schedule": "tsx scripts/fake-schedule.ts",
     "inspector": "mcp-inspector --transport http --server-url http://localhost:3002/mcp"
   },
   "exports": {

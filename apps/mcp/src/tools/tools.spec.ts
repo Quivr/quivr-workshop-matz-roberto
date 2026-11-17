@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import type { QuivrClient } from '../quivr/quivr-client.js'
 import { getClassmates } from './get-classmates.js'
+import { QuivrClient } from '../quivr/quivr-client.js'
+import { findMatches } from './find-matches.js'
+import { findSharedFreeTime } from './find-shared-free-time.js'
+import { planDate } from './plan-date.js'
+import { sendDateInvite } from './send-date-invite.js'
 import { getLibraryOccupancy } from './get-library-occupancy.js'
 import { getMenu } from './get-menu.js'
 import { getMySchedule } from './get-my-schedule.js'
@@ -502,5 +506,220 @@ describe('get_classmates', () => {
       'Anna Voorbeeld',
       'Bram Nepnaam',
     ])
+  })
+})
+
+const fixtureQuivr = () =>
+  new QuivrClient({ mode: 'fixtures', readOnly: true, baseUrl: '' })
+
+describe('find_matches', () => {
+  it('ranks by compatibility, explains why and flags the data as demo', async () => {
+    const result = (await findMatches.run(
+      { from: '2026-11-17' },
+      fixtureQuivr()
+    )) as {
+      demo: boolean
+      center: { area: string }
+      matches: { firstName: string; score: number; reasons: string[] }[]
+    }
+
+    expect(result.demo).toBe(true)
+    expect(result.center.area).toBe('arenberg')
+    expect(result.matches[0]).toMatchObject({ firstName: 'Lotte' })
+    expect(result.matches[0]?.reasons.join(' ')).toMatch(/Databases/)
+    const scores = result.matches.map(match => match.score)
+    expect(scores).toEqual([...scores].sort((a, b) => b - a))
+  })
+
+  it('filters by gender and interest', async () => {
+    const result = (await findMatches.run(
+      { from: '2026-11-17', gender: 'woman', interest: 'Climbing' },
+      fixtureQuivr()
+    )) as { matches: { firstName: string }[] }
+
+    expect(result.matches.map(match => match.firstName)).toEqual(['Lotte'])
+  })
+
+  it('returns no matches for an interest nobody has', async () => {
+    const result = (await findMatches.run(
+      { from: '2026-11-17', interest: 'skydiving' },
+      fixtureQuivr()
+    )) as { matches: unknown[] }
+
+    expect(result.matches).toEqual([])
+  })
+})
+
+describe('find_shared_free_time', () => {
+  it('finds the Thursday lunch gap between two timetables', async () => {
+    const result = (await findSharedFreeTime.run(
+      { student: 'lotte', from: '2026-11-19', to: '2026-11-19' },
+      fixtureQuivr()
+    )) as { slots: { start: string; end: string }[] }
+
+    expect(result.slots).toContainEqual(
+      expect.objectContaining({ start: '12:15', end: '13:45' })
+    )
+  })
+
+  it('rejects unknown students', async () => {
+    await expect(
+      findSharedFreeTime.run(
+        { student: 'Nobody', from: '2026-11-19', to: '2026-11-19' },
+        fixtureQuivr()
+      )
+    ).rejects.toThrow(/No demo student/)
+  })
+})
+
+describe('plan_date', () => {
+  it('plans a lunch inside the shared gap with a dish you both love', async () => {
+    const result = (await planDate.run(
+      { student: 'lotte', date: '2026-11-19', kind: 'lunch' },
+      fixtureQuivr()
+    )) as {
+      found: boolean
+      slot: { start: string }
+      venue: { kind: string }
+      why: string[]
+      mission: { title: string; text: string }[]
+      inviteDrafts: { tone: string; message: string }[]
+    }
+
+    expect(result.found).toBe(true)
+    expect(result.slot.start).toBe('12:15')
+    expect(result.venue.kind).toBe('restaurant')
+    expect(result.why.join(' ')).toMatch(/you both love it/)
+    expect(result.mission).toHaveLength(3)
+    expect(result.mission[0]?.text).toContain('Alma ESAT2')
+    expect(result.mission[1]?.text).toContain('Tiramisu')
+    expect(result.inviteDrafts.map(draft => draft.tone)).toEqual([
+      'sweet',
+      'absurd',
+      'low-key',
+    ])
+    for (const draft of result.inviteDrafts) {
+      expect(draft.message.length).toBeLessThanOrEqual(280)
+      expect(draft.message).toContain('Thu 19 Nov at 12:15')
+    }
+  })
+
+  it('rerolls a lunch towards the cheapest warm meal', async () => {
+    const result = (await planDate.run(
+      {
+        student: 'lotte',
+        date: '2026-11-19',
+        kind: 'lunch',
+        twist: 'budget',
+      },
+      fixtureQuivr()
+    )) as {
+      found: boolean
+      venue: { name: string }
+      why: string[]
+      highlights: { name: string }[]
+    }
+
+    expect(result.found).toBe(true)
+    expect(result.venue.name).toBe('Alma 1')
+    expect(result.why.join(' ')).toContain('A warm meal starts at €6.15')
+    expect(result.highlights[0]?.name).toBe(
+      'Famous Alma Vegan Burger with potato wedges'
+    )
+  })
+
+  it('labels the quiet library choice as a snapshot and chooses a lively bar for chaos', async () => {
+    const quiet = (await planDate.run(
+      {
+        student: 'lotte',
+        date: '2026-11-19',
+        kind: 'study',
+        twist: 'quiet',
+      },
+      fixtureQuivr()
+    )) as { found: boolean; venue: { percentFull: number }; caveat: string }
+    const chaos = (await planDate.run(
+      {
+        student: 'lotte',
+        date: '2026-11-19',
+        kind: 'drinks',
+        twist: 'chaos',
+      },
+      fixtureQuivr()
+    )) as { found: boolean; venue: { expectedCrowd: string } }
+
+    expect(quiet.found).toBe(true)
+    expect(quiet.venue.percentFull).toBe(0)
+    expect(quiet.caveat).toContain('not a forecast')
+    expect(quiet.caveat).toContain('opening hours were not checked')
+    expect(chaos.found).toBe(true)
+    expect(chaos.venue.expectedCrowd).toBe('YELLOW')
+  })
+
+  it('rejects a plot twist that cannot apply to the date kind', async () => {
+    await expect(
+      planDate.run(
+        {
+          student: 'lotte',
+          date: '2026-11-19',
+          kind: 'study',
+          twist: 'budget',
+        },
+        fixtureQuivr()
+      )
+    ).rejects.toThrow(/does not fit/)
+  })
+
+  it('says so when there is no shared free time', async () => {
+    const result = (await planDate.run(
+      { student: 'mathias', date: '2026-11-17', kind: 'study' },
+      {
+        ...fixtureQuivr(),
+        getMySchedule: async () => ({
+          scheduleItems: {
+            scheduleItems: [
+              {
+                __typename: 'Event',
+                id: '1',
+                title: 'Busy all day',
+                startTime: '2026-11-17T08:00:00+01:00',
+                endTime: '2026-11-17T22:00:00+01:00',
+                locations: [],
+              },
+            ],
+          },
+        }),
+      } as unknown as QuivrClient
+    )) as { found: boolean; reason: string }
+
+    expect(result.found).toBe(false)
+    expect(result.reason).toMatch(/no shared free time/)
+  })
+})
+
+describe('send_date_invite', () => {
+  const invite = {
+    student: 'Lotte',
+    date: '2026-11-19',
+    time: '12:15',
+    place: 'Alma ESAT2',
+    message: 'Lunch?',
+  }
+
+  it('refuses to send without confirmation', async () => {
+    await expect(
+      sendDateInvite.run({ ...invite, confirmed: false }, fakeQuivr({}))
+    ).rejects.toThrow(/Not confirmed/)
+  })
+
+  it('delivers a simulated invite after confirmation', async () => {
+    const result = (await sendDateInvite.run(
+      { ...invite, confirmed: true },
+      fakeQuivr({})
+    )) as { simulated: boolean; reply: string }
+
+    expect(result.simulated).toBe(true)
+    expect(result.reply).toContain('Thursday 19 November, 12:15')
+    expect(result.reply).toContain('Alma ESAT2')
   })
 })
