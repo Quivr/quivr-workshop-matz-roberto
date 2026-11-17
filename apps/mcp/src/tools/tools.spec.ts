@@ -304,7 +304,7 @@ describe('get_classmates', () => {
           classmates: [
             {
               id: '1',
-              name: 'Lotte V.',
+              name: 'Lotte Voorbeeld',
               isSameClass: false,
               title: 'Chess club',
               start: at('10:00'),
@@ -446,6 +446,35 @@ describe('get_classmates', () => {
     ])
   })
 
+  it('uses the full name and falls back to the first name without a last name', async () => {
+    const quivr = setup(
+      [mine('Databases', '09:00', '11:00')],
+      [
+        friend('1', ' Lotte ', ' Voorbeeld '),
+        friend('2', 'Max', ''),
+        friend('3', 'Nina', '   '),
+        { id: '4', firstName: 'Jules', lastName: null } as never,
+      ],
+      {
+        '1': [theirs('Databases', '09:00', '11:00')],
+        '2': [theirs('Databases', '09:00', '11:00')],
+        '3': [theirs('Databases', '09:00', '11:00')],
+        '4': [theirs('Databases', '09:00', '11:00')],
+      }
+    )
+
+    const result = (await getClassmates.run({ date: '2026-11-17' }, quivr)) as {
+      classes: { classmates: { name: string }[] }[]
+    }
+
+    expect(result.classes[0]?.classmates.map(c => c.name)).toEqual([
+      'Jules',
+      'Lotte Voorbeeld',
+      'Max',
+      'Nina',
+    ])
+  })
+
   it('sorts same-class friends first, then by name', async () => {
     const quivr = setup(
       [mine('Databases', '09:00', '11:00', 'V1.12')],
@@ -468,10 +497,10 @@ describe('get_classmates', () => {
     }
 
     expect(result.classes[0]?.classmates.map(c => c.name)).toEqual([
-      'Max M.',
-      'Zoë M.',
-      'Anna V.',
-      'Bram N.',
+      'Max Mockdata',
+      'Zoë Mockdata',
+      'Anna Voorbeeld',
+      'Bram Nepnaam',
     ])
   })
 })
