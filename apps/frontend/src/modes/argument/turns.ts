@@ -89,7 +89,7 @@ export const argumentReducer = (
   action: ArgumentAction
 ): ArgumentState => {
   switch (action.type) {
-    case 'start':
+    case 'start': {
       if (state.status !== 'idle') return state
       const first = nextSpeaker(state.cast, action.away ?? [], null)
       if (first === null) {
@@ -101,6 +101,7 @@ export const argumentReducer = (
         topic: action.topic,
         speaker: first,
       }
+    }
 
     case 'turnFinished': {
       if (state.status !== 'running') return state

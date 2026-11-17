@@ -29,14 +29,11 @@ export function useBar({
 }: Options) {
   const [controller] = useState(() => createBreakController())
   const [lookupModel] = useState(() => factsModel ?? model)
-  const busyRef = useRef(isBusy)
-  const [bar] = useState(() =>
-    createBarLife(controller, undefined, () => busyRef.current?.() ?? false)
-  )
+  const [bar] = useState(() => createBarLife(controller))
   const { gag, banter } = bar
   const handlersRef = useRef({ onBreakStart, onBreakEnd })
   useEffect(() => {
-    busyRef.current = isBusy
+    bar.setBusy(isBusy ?? (() => false))
     handlersRef.current = { onBreakStart, onBreakEnd }
   })
   const breakState = useSyncExternalStore(
