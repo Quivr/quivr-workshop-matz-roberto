@@ -50,56 +50,71 @@ function OccupancyBar({ percentFull }: { percentFull: number }) {
 export function LibraryCard({ result }: CardProps) {
   const libraries = (result ?? []) as Library[]
 
-  // Quietest first, so the card answers "where can I find a seat".
-  // Libraries without sensors have no answer to give: they go last.
-  const sorted = [...libraries].sort((a, b) => {
-    if (isMeasured(a) && isMeasured(b)) return a.percentFull - b.percentFull
-    if (isMeasured(a)) return -1
-    if (isMeasured(b)) return 1
-    return a.name.localeCompare(b.name)
-  })
+  // Most libraries report no capacity at all. Listing them row by row would
+  // bury the ones that actually answer "where can I find a seat", so they are
+  // collapsed into a single line at the bottom.
+  const measured = libraries
+    .filter(isMeasured)
+    .sort((a, b) => a.percentFull - b.percentFull)
+  const unmeasured = libraries
+    .filter(library => !isMeasured(library))
+    .sort((a, b) => a.name.localeCompare(b.name))
 
-  const measuredAt = sorted.find(library => library.measuredAt)?.measuredAt
-  const subtitle = [
-    `${libraries.length} ${libraries.length === 1 ? 'library' : 'libraries'}`,
-    measuredAt && `measured ${time(measuredAt)}`,
-  ]
-    .filter(Boolean)
-    .join(' · ')
+  const measuredAt = measured.find(library => library.measuredAt)?.measuredAt
+  const subtitle =
+    libraries.length === 0
+      ? 'no libraries'
+      : [
+          unmeasured.length === 0
+            ? `${libraries.length} ${libraries.length === 1 ? 'library' : 'libraries'}`
+            : `${measured.length} of ${libraries.length} with live data`,
+          measuredAt && `measured ${time(measuredAt)}`,
+        ]
+          .filter(Boolean)
+          .join(' · ')
 
   return (
     <Card
       title="Library occupancy"
       subtitle={subtitle}
     >
-      {sorted.length === 0 && <p>No libraries found.</p>}
-      <ul className="space-y-2">
-        {sorted.map(library => (
-          <li
-            key={library.id}
-            title={library.address}
-          >
-            <div className="flex items-baseline justify-between gap-2">
-              <span className="truncate">{library.name}</span>
-              {isMeasured(library) ? (
+      {libraries.length === 0 && <p>No libraries found.</p>}
+      {libraries.length > 0 && measured.length === 0 && (
+        <p>No library is reporting occupancy right now.</p>
+      )}
+      {measured.length > 0 && (
+        <ul className="space-y-2">
+          {measured.map(library => (
+            <li
+              key={library.id}
+              title={library.address}
+            >
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="truncate">{library.name}</span>
                 <span className="shrink-0 text-xs">
                   {library.occupancy} / {library.capacity}
                   <span className="ml-1.5 font-bold">
                     {library.percentFull}%
                   </span>
                 </span>
-              ) : (
-                <span className="text-sidenav-secondary shrink-0 text-xs italic">
-                  no sensor data
-                </span>
-              )}
-            </div>
-            {isMeasured(library) && (
+              </div>
               <OccupancyBar percentFull={library.percentFull} />
-            )}
-          </li>
-        ))}
-      </ul>
+            </li>
+          ))}
+        </ul>
+      )}
+      {unmeasured.length > 0 && (
+        <details className="border-schedule-border-grey text-sidenav-secondary mt-3 border-t pt-2 text-xs">
+          <summary className="cursor-pointer">
+            {unmeasured.length}{' '}
+            {unmeasured.length === 1 ? 'library' : 'libraries'} without sensor
+            data
+          </summary>
+          <p className="mt-1">
+            {unmeasured.map(library => library.name).join(', ')}
+          </p>
+        </details>
+      )}
     </Card>
   )
 }
