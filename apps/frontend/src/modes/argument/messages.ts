@@ -1,6 +1,6 @@
 import type { Message, UserMessage } from '@ag-ui/core'
 
-import { MAX_TURNS, type Heard } from './turns'
+import { MAX_TURNS } from './turns'
 
 export type Topic = { id: string; label: string; question: string }
 
@@ -21,80 +21,113 @@ export const TOPICS: Topic[] = [
     id: 'schedule',
     label: 'My schedule',
     question:
-      "Is the student's schedule today a good one or a nightmare? Look at their real schedule.",
+      "Is the student's schedule tomorrow a good one or a nightmare? Look at their real schedule.",
+  },
+  {
+    id: 'classmates',
+    label: 'Whose day is worse',
+    question:
+      "Whose day tomorrow is worse: the student's, or their friends'? Look at the student's schedule and at which friends have something scheduled at the same time.",
   },
 ]
 
-const HEARD_ID_PREFIX = 'heard-'
-const PROMPT_ID_PREFIX = 'prompt-'
-
-export const isPrompt = (message: Message) =>
-  message.id.startsWith(PROMPT_ID_PREFIX)
-
-const HEARD_PREFIX = /^\[[^\]]*\]\s*/
-
-/** The text of a heard message without the "[Name, …]" label the model sees. */
-export const heardText = (content: string) => content.replace(HEARD_PREFIX, '')
-
-/** What another character said, as a history message. `name` carries the speaker's id. */
-export const heardMessage = (
-  heard: Heard,
-  speakerName: string
-): UserMessage => ({
-  id: `${HEARD_ID_PREFIX}${heard.id}`,
-  role: 'user',
-  name: heard.from,
-  content: `[${speakerName}, another character in this argument, not the student] ${heard.text}`,
-})
-
-type PromptInput = {
-  topic: Topic
-  turn: number
-  speakerName: string
-  otherNames: string[]
-  isFirstTurnForSpeaker: boolean
-  previousSpeakerName?: string
-}
-
-/** The instruction that opens a character's turn. Facts must come from tools. */
-export const turnPrompt = ({
-  topic,
-  turn,
-  speakerName,
-  otherNames,
-  isFirstTurnForSpeaker,
-  previousSpeakerName,
-}: PromptInput): Message => {
-  const rules = [
-    'Every fact you state (restaurant, dish, library, class, time, room, number) must come from a tool result you have seen in this chat. Never invent facts.',
-    'If the tools do not tell you something, say you do not know. You can be opinionated, rude to the others and funny, but not about the facts.',
-    'Quote at least one concrete detail from a tool result.',
-    'Only call tools that read data. 2 to 4 short sentences, no lists, in character.',
-  ]
-  const lines = isFirstTurnForSpeaker
-    ? [
-        `ARGUMENT, turn ${turn + 1} of ${MAX_TURNS}. You are ${speakerName}, arguing with ${otherNames.join(' and ')} about the student's own data. The student is watching.`,
-        `Topic: ${topic.question}`,
-        previousSpeakerName
-          ? `${previousSpeakerName} spoke before you. Look up the facts with your tools first, then take a side and answer them.`
-          : 'You speak first. Look up the facts with your tools first, then take a side and start the fight.',
-      ]
-    : [
-        `ARGUMENT, turn ${turn + 1} of ${MAX_TURNS}. Your turn, ${speakerName}. Answer what ${previousSpeakerName ?? 'the others'} just said: disagree and counter with a specific detail from a tool result. Call a tool again if you need another fact.`,
-      ]
-  return {
-    id: `${PROMPT_ID_PREFIX}${turn + 1}`,
-    role: 'user',
-    content: [...lines, ...rules].join('\n'),
-  }
-}
+/** A message in the shared thread, and which character wrote it (none: the student). */
+export type ThreadItem = { message: Message; speaker?: string }
 
 const textOf = (content: unknown) =>
   typeof content === 'string' ? content : ''
 
-/** The last non-empty assistant text after `fromIndex`: the turn's spoken message. */
-export const spokenText = (messages: readonly Message[], fromIndex: number) => {
-  for (let i = messages.length - 1; i >= fromIndex; i--) {
+const FACT_RULES = [
+  'Every fact you state (restaurant, dish, library, class, friend, time, room, number) must come from a tool result in this conversation. Reuse the results above or call a read-only tool if you need more. Never invent facts.',
+  'If the tools do not tell you something, say you do not know. You can be opinionated, rude to the others and funny, but not about the facts.',
+  'Quote at least one concrete detail from a tool result.',
+  '2 to 4 short sentences, no lists, in character. Do not start with your own name or with square brackets.',
+]
+
+/** The first message of every run: it also guarantees the history starts with a user message. */
+export const kickoffMessage = (topic: Topic): UserMessage => ({
+  id: 'kickoff',
+  role: 'user',
+  content: `The student wants three characters to argue about their own data while they watch. Topic: ${topic.question}`,
+})
+
+type InstructionInput = {
+  turn: number
+  speakerName: string
+  otherNames: string[]
+  previousSpeakerName?: string
+}
+
+/** The last message of an argument turn: who you are and what to do now. */
+export const turnInstruction = ({
+  turn,
+  speakerName,
+  otherNames,
+  previousSpeakerName,
+}: InstructionInput): UserMessage => ({
+  id: `instruction-${turn + 1}`,
+  role: 'user',
+  content: [
+    `ARGUMENT, turn ${turn + 1} of ${MAX_TURNS}. You are ${speakerName}, in a group chat with ${otherNames.join(' and ')}. Lines that start with a name in square brackets were said by the others, not by you.`,
+    previousSpeakerName
+      ? `${previousSpeakerName} spoke last: answer them directly, disagree and take a side.`
+      : 'You speak first: take a side and start the fight.',
+    ...FACT_RULES,
+  ].join('\n'),
+})
+
+/** The last message when the student joined the thread and one character answers. */
+export const replyInstruction = (speakerName: string): UserMessage => ({
+  id: `reply-${crypto.randomUUID()}`,
+  role: 'user',
+  content: [
+    `The student joined the group chat and wrote the last message that is not in square brackets. You are ${speakerName}: answer the student directly and briefly. Lines that start with a name in square brackets were said by the other characters.`,
+    ...FACT_RULES,
+  ].join('\n'),
+})
+
+/**
+ * What one character sees of the shared thread: its own messages as they were,
+ * the others' lines as labelled user messages (so it does not mistake them for
+ * its own), and everyone's tool calls and results, which are shared facts.
+ */
+export const forSpeaker = (
+  thread: readonly ThreadItem[],
+  speakerId: string,
+  nameOf: (id: string) => string
+): Message[] =>
+  thread.flatMap(({ message, speaker }): Message[] => {
+    if (message.role !== 'assistant') return [message]
+    if (speaker === undefined || speaker === speakerId) return [message]
+    // Text said next to a tool call is filler: keep the call, drop the words.
+    if (message.toolCalls?.length) return [{ ...message, content: '' }]
+    const text = textOf(message.content).trim()
+    if (!text) return []
+    return [
+      {
+        id: `${message.id}-says`,
+        role: 'user',
+        content: `[${nameOf(speaker)}, another character in this argument, not the student] ${text}`,
+      },
+    ]
+  })
+
+/** The messages for one run: topic, the thread as this speaker sees it, then the instruction. */
+export const buildInput = (
+  topic: Topic,
+  thread: readonly ThreadItem[],
+  speakerId: string,
+  nameOf: (id: string) => string,
+  instruction: UserMessage
+): Message[] => [
+  kickoffMessage(topic),
+  ...forSpeaker(thread, speakerId, nameOf),
+  instruction,
+]
+
+/** The last non-empty assistant text: the turn's spoken message. */
+export const spokenText = (messages: readonly Message[]) => {
+  for (let i = messages.length - 1; i >= 0; i--) {
     const message = messages[i]!
     if (message.role !== 'assistant') continue
     const text = textOf(message.content).trim()
