@@ -37,6 +37,11 @@ export type LibrariesQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type LibrariesQuery = { libraries: Array<{ id: string, name: string, data: { capacity: number, occupancy: number, timestamp: string } | null, location: { address: string | null } | null }> };
 
+export type MeQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MeQuery = { user: { id: string, firstName: string, lastName: string, email: string } | null };
+
 export type MenuQueryVariables = Exact<{
   restaurantId: string | number;
   timeRange: TimeRangeInput;

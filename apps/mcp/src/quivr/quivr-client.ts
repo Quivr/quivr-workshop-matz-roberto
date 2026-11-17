@@ -11,6 +11,7 @@ import {
 } from '../config.js'
 import type {
   LibrariesQuery,
+  MeQuery,
   MenuQuery,
   MyScheduleQuery,
   RestaurantsQuery,
@@ -54,6 +55,10 @@ export class QuivrClient {
 
   getLibraries(): Promise<LibrariesQuery> {
     return this.request('Libraries', {})
+  }
+
+  getStudentCard(): Promise<MeQuery> {
+    return this.request('Me', {})
   }
 
   async request<T>(operationName: string, variables: object): Promise<T> {
