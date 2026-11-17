@@ -2,6 +2,7 @@ import type { ComponentType } from 'react'
 
 import { LibraryCard } from './LibraryCard'
 import { MenuCard } from './MenuCard'
+import { RestaurantsCard } from './RestaurantsCard'
 import { ScheduleCard } from './ScheduleCard'
 import type { CardProps } from './types'
 
@@ -9,5 +10,6 @@ import type { CardProps } from './types'
 export const cards: Record<string, ComponentType<CardProps>> = {
   get_my_schedule: ScheduleCard,
   get_menu: MenuCard,
+  list_restaurants: RestaurantsCard,
   get_library_occupancy: LibraryCard,
 }
