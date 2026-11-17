@@ -9,6 +9,7 @@ const WHAT: Record<PaywallReason, string> = {
   'super-likes': 'Another Super Like',
   'locked-profile': 'Seeing this mystery person',
   browse: 'This',
+  questions: 'Another question',
 }
 
 const SIRENS = ['🚨', '🚨', '🚨', '🚨', '🚨', '🚨']

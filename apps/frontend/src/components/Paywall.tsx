@@ -49,6 +49,11 @@ const HEADLINES: Record<PaywallReason, { title: string; subtitle: string }> = {
     title: 'WELCOME TO THE LOVE SHOP 🪙',
     subtitle: 'Totally fake. Totally irresistible.',
   },
+  questions: {
+    title: 'CURIOSITY IS A PREMIUM FEATURE 🧠💸',
+    subtitle:
+      'Your 1 free question is spent. Question #2 requires a Quivr SaaS™ Enterprise seat. (Fake, nothing is charged.)',
+  },
 }
 
 const MASCOT_LINES = [
@@ -121,6 +126,7 @@ export function Paywall({ reason, wallet, onBuy, onClose }: Props) {
   const close = useEffectEvent(onClose)
 
   const headline = HEADLINES[reason]
+  const isQuestions = reason === 'questions'
   const product = PRODUCTS.find(item => item.id === selected) ?? PRODUCTS[0]
   if (!product) throw new Error('No dating demo products are configured')
 
@@ -346,7 +352,7 @@ export function Paywall({ reason, wallet, onBuy, onClose }: Props) {
                 className="pw-buy pw-buy--back"
                 onClick={onClose}
               >
-                Back to love 💘
+                {isQuestions ? 'Back to asking ❓' : 'Back to love 💘'}
               </button>
             </div>
           ) : (
@@ -498,7 +504,9 @@ export function Paywall({ reason, wallet, onBuy, onClose }: Props) {
                 className="pw-link pw-decline"
                 onClick={onClose}
               >
-                No thanks, I’ll die alone 🥀
+                {isQuestions
+                  ? 'No thanks, I’ll wonder in silence 🥀'
+                  : 'No thanks, I’ll die alone 🥀'}
               </button>
             </>
           )}

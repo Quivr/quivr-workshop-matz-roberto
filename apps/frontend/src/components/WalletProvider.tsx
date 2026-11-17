@@ -6,6 +6,8 @@ import {
   initialWallet,
   refillWallet,
   isUnlimited,
+  parseWallet,
+  spendQuestion,
   WalletContext,
   type PaywallReason,
   type ProductId,
@@ -19,10 +21,7 @@ const STORAGE_KEY = 'ask-quivr.wallet'
 
 const load = (): WalletState => {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    return saved
-      ? { ...initialWallet(), ...(JSON.parse(saved) as Partial<WalletState>) }
-      : initialWallet()
+    return parseWallet(localStorage.getItem(STORAGE_KEY))
   } catch {
     return initialWallet()
   }
@@ -43,9 +42,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   const unlimited = isUnlimited(state)
 
-  // Hitting a limit sounds the alarm first; browsing the shop goes straight in.
+  // Hitting a limit sounds the alarm first; browsing the shop and the
+  // question limit go straight in.
   const openPaywall = useCallback((reason: PaywallReason) => {
-    if (reason === 'browse') setPaywall(reason)
+    if (reason === 'browse' || reason === 'questions') setPaywall(reason)
     else setAlarm(reason)
   }, [])
 
@@ -70,6 +70,17 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       return true
     }
 
+  const askQuestion = () => {
+    const next = spendQuestion(latest.current)
+    if (!next) {
+      openPaywall('questions')
+      return false
+    }
+    latest.current = next
+    setState(next)
+    return true
+  }
+
   const wallet: Wallet = {
     state,
     isUnlimited: unlimited,
@@ -77,6 +88,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     spendAction: spend('actions', 'actions'),
     spendSwipe: spend('swipes', 'swipes'),
     spendSuperLike: spend('superLikes', 'super-likes'),
+    spendQuestion: askQuestion,
     openPaywall,
     refill: () => {
       const next = refillWallet(latest.current)

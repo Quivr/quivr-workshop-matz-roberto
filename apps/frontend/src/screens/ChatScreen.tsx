@@ -8,6 +8,8 @@ import { HeartCurtain } from '../components/HeartCurtain'
 import { MessageList } from '../components/MessageList'
 import { TracesPanel } from '../components/TracesPanel'
 import { useStickToBottom } from '../components/useStickToBottom'
+import { askThroughGate } from '../subscription/askGate'
+import { QuestionStatus } from '../subscription/QuestionStatus'
 import type { useAgentChat } from '../useAgentChat'
 import { useWallet } from '../wallet'
 import type { ScreenProps } from './types'
@@ -44,19 +46,28 @@ export function ChatScreen({
   const { abort } = chat
   useEffect(() => abort, [abort])
 
-  const handleSend = (text: string) => {
+  const handleCompose = (text: string) =>
+    setComposeRequest(previous => ({ id: (previous?.id ?? 0) + 1, text }))
+  const sendToAgent = (text: string) => {
     scrollToBottom()
     void chat.send(text, model)
   }
+  // Typed and example questions go through the free-question gate. Keep the
+  // text in the composer when blocked, so nothing is lost behind the paywall.
+  const handleSend = (text: string): boolean => {
+    const wasSent = askThroughGate(wallet.spendQuestion, () =>
+      sendToAgent(text)
+    )
+    if (!wasSent) handleCompose(text)
+    return wasSent
+  }
   const handlePaidAction = (text: string) => {
     if (chat.isRunning || !model) return
-    if (wallet.spendAction()) handleSend(text)
+    if (wallet.spendAction()) sendToAgent(text)
   }
-  const handleCompose = (text: string) =>
-    setComposeRequest(previous => ({ id: (previous?.id ?? 0) + 1, text }))
   const handleExample = (example: string) => {
-    if (example.includes(LOVE_EMOJI)) setCurtainKey(key => key + 1)
-    handleSend(example)
+    if (handleSend(example) && example.includes(LOVE_EMOJI))
+      setCurtainKey(key => key + 1)
   }
 
   return (
@@ -143,6 +154,7 @@ export function ChatScreen({
       </div>
       {!isShowingTraces && (
         <footer className="mx-auto w-full max-w-3xl p-4 pt-0">
+          <QuestionStatus />
           <Composer
             key={composeRequest?.id ?? 0}
             isDisabled={chat.isRunning || !model}
