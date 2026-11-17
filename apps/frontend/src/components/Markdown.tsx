@@ -23,13 +23,16 @@ const components: Components = {
   h3: styled('h3', 'my-2 font-bold'),
   ul: styled('ul', 'my-2 list-disc pl-5'),
   ol: styled('ol', 'my-2 list-decimal pl-5'),
-  a: ({ node: _node, ...props }) => (
+  a: ({ node: _node, children, ...props }) => (
     <a
       className="text-blue-pretty underline"
       target="_blank"
       rel="noreferrer noopener"
       {...props}
-    />
+    >
+      {children}
+      <span className="sr-only"> (opens in a new tab)</span>
+    </a>
   ),
   code: styled('code', 'bg-schedule-bg-grey rounded px-1 py-0.5 text-sm'),
   pre: styled(
@@ -48,9 +51,12 @@ const components: Components = {
       />
     </div>
   ),
-  th: styled(
-    'th',
-    'border-schedule-border-grey border px-2 py-1 text-left font-bold'
+  th: ({ node: _node, ...props }) => (
+    <th
+      scope="col"
+      className="border-schedule-border-grey border px-2 py-1 text-left font-bold"
+      {...props}
+    />
   ),
   td: styled('td', 'border-schedule-border-grey border px-2 py-1'),
 }

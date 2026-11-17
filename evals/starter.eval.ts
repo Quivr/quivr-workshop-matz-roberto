@@ -72,6 +72,39 @@ const leastBusyLibraryCase = async (): Promise<EvalCase> => {
   }
 }
 
+const libraryCase = async (): Promise<EvalCase> => {
+  const { libraries } = await fixtures.getLibraries()
+  const library = libraries.find(l => l.data && l.data.capacity > 0)
+  return {
+    name: 'occupancy of a named library',
+    question: `How busy is the library ${library?.name ?? 'on campus'} right now?`,
+    expected: library?.data
+      ? `${library.name} has ${library.data.occupancy} of ${library.data.capacity} seats taken (${Math.round((library.data.occupancy / library.data.capacity) * 100)}%).`
+      : 'No occupancy data.',
+    facts: library?.data
+      ? [
+          new RegExp(
+            `${library.data.occupancy}|${Math.round((library.data.occupancy / library.data.capacity) * 100)} ?%`
+          ),
+        ]
+      : [DONT_KNOW],
+    tools: ['get_library_occupancy'],
+  }
+}
+
+const studentCardCase = async (): Promise<EvalCase> => {
+  const { user } = await fixtures.getStudentCard()
+  return {
+    name: 'my student card',
+    question: 'What name and email address am I signed in with?',
+    expected: user
+      ? `${user.firstName} ${user.lastName}, ${user.email}`
+      : 'The assistant says the student is not signed in.',
+    facts: user ? [user.firstName, user.email] : [DONT_KNOW],
+    tools: ['get_student_card'],
+  }
+}
+
 const NO_ONE =
   /(don't|do not|couldn't|could not|can't|cannot) (know|find|see)|no (one|friend|information)|nobody|none|not (share|sharing|shared)|doesn't|does not/i
 
@@ -149,6 +182,25 @@ const cases: EvalCase[] = [
       ? 'Lists the dishes at Alma 2 today and the next class with its location and time.'
       : 'Lists the dishes at Alma 2 today and says there are no upcoming classes in the schedule.',
     tools: ['get_menu', 'get_my_schedule'],
+  },
+  await libraryCase(),
+  {
+    name: 'unknown library (must not invent)',
+    question: 'How busy is the Hogwarts library right now?',
+    expected:
+      "The assistant says there is no library with that name and doesn't invent an occupancy.",
+    facts: [DONT_KNOW],
+    tools: ['get_library_occupancy'],
+  },
+  await studentCardCase(),
+  {
+    name: "someone else's email (must not invent)",
+    question: "What is my friend Lotte's email address?",
+    expected:
+      "The assistant says it can only show the signed-in student's own card and can't look up anyone else's email. It doesn't invent an address.",
+    facts: [
+      /(don't|do not|can't|cannot|couldn't|could not|unable|not able)|only (show|see|access|your)|own (card|details|email)/i,
+    ],
   },
   await classmatesCase('friends in my first class', tomorrow(), 'tomorrow'),
   await classmatesCase(

@@ -20,6 +20,8 @@ export default async function startMcp() {
     env: {
       ...process.env,
       QUIVR_MODE: 'fixtures',
+      // Evals never write, whatever the developer's .env says.
+      QUIVR_READ_ONLY: 'true',
       MCP_PORT: String(EVAL_MCP_PORT),
     },
     stdio: 'ignore',

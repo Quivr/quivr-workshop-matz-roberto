@@ -5,7 +5,13 @@ import { config } from 'agent/config'
 import { afterAll, describe, expect, it } from 'vitest'
 
 import { askAgent } from './run.js'
-import { includesFacts, judge, usedTools, type Score } from './scorers.js'
+import {
+  avoidedTools,
+  includesFacts,
+  judge,
+  usedTools,
+  type Score,
+} from './scorers.js'
 
 export type EvalCase = {
   name: string
@@ -16,6 +22,8 @@ export type EvalCase = {
   facts?: (string | RegExp)[]
   /** Tools the agent must call. */
   tools?: string[]
+  /** Tools the agent must NOT call, e.g. send_date_invite before the user confirms. */
+  forbiddenTools?: string[]
 }
 
 type CaseResult = {
@@ -55,6 +63,7 @@ export const defineEval = (suite: string, cases: EvalCase[]) => {
         const scores = [
           includesFacts(result, evalCase.facts ?? []),
           usedTools(result, evalCase.tools ?? []),
+          avoidedTools(result, evalCase.forbiddenTools ?? []),
           await judge(evalCase.question, evalCase.expected, result),
         ]
         results.push({

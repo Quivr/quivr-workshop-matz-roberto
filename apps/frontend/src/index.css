@@ -8,15 +8,15 @@
   --color-cardbg: #eeedee;
   --color-main: #ffd750;
   --color-green-status: #1abc9c;
-  --color-blue-pretty: #1c7ed6;
+  --color-blue-pretty: #176cc0; /* links: >= 4.5:1 on surface and page */
   --color-sidenav-blue: #34495e;
   --color-sidenav-secondary: #566e86;
   --color-vegan: #15803d;
-  --color-vegetarian: #23c35e;
+  --color-vegetarian: #2e8512; /* white text (on-diet) >= 4.5:1 */
   --color-schedule-bg-grey: #f1f1f1;
   --color-schedule-border-grey: #ddd;
   --color-main-text: #5c6161;
-  --color-danger: #e74c3c;
+  --color-danger: #b52f20; /* text on page and on a danger/10 wash >= 4.5:1 */
   /* Added for theming: roles that used to be hardcoded or overloaded. */
   --color-surface: #ffffff; /* cards, bubbles, inputs (was bg-white) */
   --color-muted: #566e86; /* secondary text on a surface */
@@ -329,7 +329,7 @@
  * ink flip like the rest of the surfaces. */
 @theme static {
   --color-love: #ec4899; /* focus rings, borders, accents */
-  --color-love-text: #db2777; /* pink text on a surface (>= 4.6:1) */
+  --color-love-text: #c61f68; /* pink text on a surface or wash (>= 4.5:1) */
   --color-love-hot: #d6006f; /* saturated fill, white text */
   --color-love-rose: #e11d48; /* gradient start, glows */
   --color-love-deep: #b02a68; /* gradient end */
@@ -341,7 +341,7 @@
   --color-love-siren: #b91c1c; /* red text on the yellow alarm panel */
   --color-love-alarm: #7f1d1d; /* coin alarm scrim, red end */
   --color-love-night: #1e0a14; /* coin alarm scrim, dark end */
-  --color-love-ok: #16a34a; /* "free" button on the coin alarm, white text */
+  --color-love-ok: #15803d; /* "free" button on the coin alarm, white text */
   --color-coin: #f5b700; /* QuivrCoin face */
   --color-coin-edge: #8a5a00; /* QuivrCoin rim */
   --color-coin-ink: #7a4b00; /* QuivrCoin glyph */
@@ -372,4 +372,13 @@
 
 body {
   @apply bg-schedule-bg-grey text-main-text font-sans;
+}
+
+/* Visible keyboard focus everywhere. Components can override the colour (the
+ * navy headers use outline-main) or draw their own ring. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-blue-pretty);
+    outline-offset: 2px;
+  }
 }

@@ -25,14 +25,15 @@ export function Composer({ isDisabled, onSend, prefill }: Props) {
       <input
         value={text}
         onChange={event => setText(event.target.value)}
+        aria-label="Message"
         placeholder="Ask about your schedule, menus, libraries…"
-        className="border-schedule-border-grey focus:border-sidenav-blue dark:focus:border-main bg-surface flex-1 rounded-md border px-3 py-2 outline-none focus:shadow-sm motion-safe:transition-[border-color,box-shadow]"
+        className="border-muted focus:border-sidenav-blue dark:focus:border-main bg-surface flex-1 rounded-md border px-3 py-2 focus:shadow-sm motion-safe:transition-[border-color,box-shadow]"
         autoFocus
       />
       <button
         type="submit"
-        disabled={isDisabled}
-        className="bg-main text-sidenav-blue rounded-md px-4 py-2 font-bold hover:brightness-95 active:scale-95 disabled:opacity-50 motion-safe:transition motion-safe:disabled:active:scale-100"
+        aria-disabled={isDisabled}
+        className="bg-main text-sidenav-blue rounded-md px-4 py-2 font-bold hover:brightness-95 aria-disabled:opacity-50 motion-safe:transition motion-safe:active:scale-95 motion-safe:aria-disabled:active:scale-100"
       >
         Send
       </button>

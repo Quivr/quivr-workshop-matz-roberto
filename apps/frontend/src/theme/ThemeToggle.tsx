@@ -12,7 +12,7 @@ export function ThemeToggle() {
 
   return (
     <div
-      role="radiogroup"
+      role="group"
       aria-label="Theme"
       className="bg-sidenav-secondary flex rounded p-0.5"
     >
@@ -20,12 +20,11 @@ export function ThemeToggle() {
         <button
           key={value}
           type="button"
-          role="radio"
-          aria-checked={preference === value}
+          aria-pressed={preference === value}
           aria-label={label}
           title={label}
           onClick={() => setPreference(value)}
-          className={`focus-visible:outline-main rounded px-1.5 py-0.5 text-sm focus-visible:outline-2 ${
+          className={`focus-visible:outline-main rounded px-1.5 py-0.5 text-sm ${
             preference === value
               ? 'bg-main text-sidenav-blue'
               : 'hover:bg-sidenav-blue'

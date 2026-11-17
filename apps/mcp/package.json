@@ -43,6 +43,7 @@
   "exports": {
     "./quivr-client": "./src/quivr/quivr-client.ts",
     "./dates": "./src/quivr/dates.ts",
-    "./config": "./src/config.ts"
+    "./config": "./src/config.ts",
+    "./tools": "./src/tools/index.ts"
   }
 }
