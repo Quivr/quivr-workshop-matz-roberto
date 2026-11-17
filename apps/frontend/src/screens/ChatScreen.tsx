@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useState, type CSSProperties } from 'react'
 
 import { ChatActionsContext } from '../cards/chat-actions'
 import { Composer } from '../components/Composer'
@@ -33,6 +33,9 @@ export function ChatScreen({
   onHome,
 }: Props) {
   const wallet = useWallet()
+  // Leaving this screen does not cancel a running answer: the chat state lives
+  // in App, so the answer lands in the thread while the student is away. A paid
+  // question is never left dangling without a reply.
   const [isShowingTraces, setIsShowingTraces] = useState(false)
   // 0 = no curtain; bumped on every 💘 click so the curtain replays.
   const [curtainKey, setCurtainKey] = useState(0)
@@ -42,9 +45,6 @@ export function ChatScreen({
   }>()
   const { scrollRef, contentRef, isAtBottom, scrollToBottom } =
     useStickToBottom<HTMLElement>()
-
-  const { abort } = chat
-  useEffect(() => abort, [abort])
 
   const handleCompose = (text: string) =>
     setComposeRequest(previous => ({ id: (previous?.id ?? 0) + 1, text }))
