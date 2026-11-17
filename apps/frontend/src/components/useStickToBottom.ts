@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 const DEFAULT_THRESHOLD = 48
+/** Upward movement from the pinned position that counts as the user scrolling away. */
+const RELEASE_DISTANCE = 24
 const SMOOTH_SCROLL_MAX_MS = 1000
 const USER_INPUT_EVENTS = ['wheel', 'touchstart', 'keydown']
 
@@ -24,6 +26,9 @@ const prefersReducedMotion = () =>
  *
  * `isAtBottom` is meant for UI (show a "Jump to latest" button when false).
  * `scrollToBottom` scrolls down and re-arms the follow lock.
+ *
+ * The lock is only released by the user moving the scroll position up, never
+ * by content growing, however much and however fast it grows.
  */
 export function useStickToBottom<
   S extends HTMLElement = HTMLDivElement,
@@ -31,88 +36,91 @@ export function useStickToBottom<
 >({ threshold = DEFAULT_THRESHOLD }: Options = {}) {
   const [scrollElement, setScrollElement] = useState<S | null>(null)
   const [contentElement, setContentElement] = useState<C | null>(null)
-  const [isAtBottom, setIsAtBottom] = useState(true)
+  const [isAtBottom, setIsAtBottomState] = useState(true)
+  const isAtBottomRef = useRef(true)
   const isStuckRef = useRef(true)
+  /** Highest scrollTop reached while pinned: the reference for "scrolled up". */
+  const pinnedTopRef = useRef(0)
   const isSmoothScrollingRef = useRef(false)
   const smoothTimerRef = useRef<number | undefined>(undefined)
-  const stopSmoothScrollRef = useRef<() => void>(() => {})
+
+  const setIsAtBottom = useCallback((value: boolean) => {
+    if (isAtBottomRef.current === value) return
+    isAtBottomRef.current = value
+    setIsAtBottomState(value)
+  }, [])
+
+  const stopSmoothScroll = useCallback(() => {
+    isSmoothScrollingRef.current = false
+    window.clearTimeout(smoothTimerRef.current)
+  }, [])
 
   const scrollToBottom = useCallback(() => {
     isStuckRef.current = true
     const element = scrollElement
     if (!element) return
     const top = element.scrollHeight - element.clientHeight
-    if (top - element.scrollTop < 1) return setIsAtBottom(true)
+    if (top - element.scrollTop < 1) {
+      pinnedTopRef.current = element.scrollTop
+      return setIsAtBottom(true)
+    }
     if (prefersReducedMotion()) {
       element.scrollTo({ top, behavior: 'instant' })
-      return
+      pinnedTopRef.current = top
+      return setIsAtBottom(true)
     }
     // Intermediate scroll events of a smooth scroll must not release the lock.
+    pinnedTopRef.current = element.scrollTop
     isSmoothScrollingRef.current = true
     window.clearTimeout(smoothTimerRef.current)
     smoothTimerRef.current = window.setTimeout(
-      () => stopSmoothScrollRef.current(),
+      stopSmoothScroll,
       SMOOTH_SCROLL_MAX_MS
     )
     element.scrollTo({ top, behavior: 'smooth' })
-  }, [scrollElement])
+  }, [scrollElement, setIsAtBottom, stopSmoothScroll])
 
   useEffect(() => {
     if (!scrollElement) return
 
-    let lastTop = scrollElement.scrollTop
-    let lastHeight = scrollElement.scrollHeight
+    const maxTop = () => scrollElement.scrollHeight - scrollElement.clientHeight
+    const distanceFromBottom = () => maxTop() - scrollElement.scrollTop
 
-    const distanceFromBottom = () =>
-      scrollElement.scrollHeight -
-      scrollElement.scrollTop -
-      scrollElement.clientHeight
-
-    const remember = () => {
-      lastTop = scrollElement.scrollTop
-      lastHeight = scrollElement.scrollHeight
-    }
-
-    const stopSmoothScroll = () => {
-      isSmoothScrollingRef.current = false
-      window.clearTimeout(smoothTimerRef.current)
-    }
-    stopSmoothScrollRef.current = stopSmoothScroll
-
-    const follow = () => {
+    // Runs inside a ResizeObserver callback, i.e. after layout and before
+    // paint: one read, one write, and the frame is painted already pinned.
+    const handleResize = () => {
+      if (!isStuckRef.current) {
+        setIsAtBottom(distanceFromBottom() <= threshold)
+        return
+      }
       stopSmoothScroll()
-      scrollElement.scrollTo({
-        top: scrollElement.scrollHeight,
-        behavior: 'instant',
-      })
-      remember()
+      const top = maxTop()
+      if (scrollElement.scrollTop !== top) {
+        scrollElement.scrollTo({ top, behavior: 'instant' })
+      }
+      pinnedTopRef.current = top
       setIsAtBottom(true)
     }
 
     const handleScroll = () => {
-      const nearBottom = distanceFromBottom() <= threshold
+      const top = scrollElement.scrollTop
+      const distance = maxTop() - top
       if (isSmoothScrollingRef.current) {
-        if (nearBottom) {
+        if (distance <= threshold) {
           stopSmoothScroll()
           isStuckRef.current = true
-          setIsAtBottom(true)
+          pinnedTopRef.current = top
         }
-        remember()
-        return
+      } else if (isStuckRef.current) {
+        if (distance <= 1) pinnedTopRef.current = top
+        else if (pinnedTopRef.current - top >= RELEASE_DISTANCE)
+          isStuckRef.current = false
+      } else if (distance <= threshold) {
+        isStuckRef.current = true
+        pinnedTopRef.current = top
       }
-      // Moving up without the content having changed size is the user.
-      const scrolledUp =
-        scrollElement.scrollTop < lastTop &&
-        scrollElement.scrollHeight === lastHeight
-      isStuckRef.current = nearBottom && !scrolledUp
-      setIsAtBottom(nearBottom)
-      remember()
-    }
-
-    const handleContentChange = () => {
-      if (isStuckRef.current) return follow()
-      lastHeight = scrollElement.scrollHeight
-      setIsAtBottom(distanceFromBottom() <= threshold)
+      // While pinned, content that outgrew the viewport is about to be followed.
+      setIsAtBottom(isStuckRef.current || distance <= threshold)
     }
 
     scrollElement.addEventListener('scroll', handleScroll, { passive: true })
@@ -120,10 +128,10 @@ export function useStickToBottom<
     for (const name of USER_INPUT_EVENTS) {
       scrollElement.addEventListener(name, stopSmoothScroll, { passive: true })
     }
-    const observer = new ResizeObserver(handleContentChange)
+    const observer = new ResizeObserver(handleResize)
     observer.observe(scrollElement)
     if (contentElement) observer.observe(contentElement)
-    handleContentChange()
+    handleResize()
 
     return () => {
       stopSmoothScroll()
@@ -134,7 +142,13 @@ export function useStickToBottom<
       }
       observer.disconnect()
     }
-  }, [scrollElement, contentElement, threshold])
+  }, [
+    scrollElement,
+    contentElement,
+    threshold,
+    setIsAtBottom,
+    stopSmoothScroll,
+  ])
 
   return {
     scrollRef: setScrollElement,
