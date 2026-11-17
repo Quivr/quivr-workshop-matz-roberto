@@ -15,7 +15,7 @@ const CLIP_ORDER: CharacterClip[] = [
 export function CharacterGallery() {
   return (
     <section className="mx-auto max-w-6xl p-6">
-      <h1 className="font-title text-sidenav-blue mb-6 text-4xl">
+      <h1 className="font-title text-heading mb-6 text-4xl">
         Quivr characters
       </h1>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -30,12 +30,10 @@ export function CharacterGallery() {
                 characterId={c.id}
                 clip="idle"
                 size={72}
-                className="rounded-full bg-white"
+                className="bg-surface rounded-full"
               />
               <div>
-                <h2 className="font-title text-sidenav-blue text-2xl">
-                  {c.name}
-                </h2>
+                <h2 className="font-title text-heading text-2xl">{c.name}</h2>
                 <p className="text-sm">{c.role}</p>
               </div>
             </header>
@@ -44,7 +42,7 @@ export function CharacterGallery() {
               {CLIP_ORDER.filter(clip => c.animations[clip]).map(clip => (
                 <li
                   key={clip}
-                  className="flex flex-col items-center rounded bg-white p-2"
+                  className="bg-surface flex flex-col items-center rounded p-2"
                 >
                   <CharacterAvatar
                     characterId={c.id}
