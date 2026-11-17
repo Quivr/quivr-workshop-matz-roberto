@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import type { QuivrClient } from '../quivr/quivr-client.js'
+import { getClassmates } from './get-classmates.js'
 import { getLibraryOccupancy } from './get-library-occupancy.js'
 import { getMenu } from './get-menu.js'
 import { getMySchedule } from './get-my-schedule.js'
@@ -237,5 +238,240 @@ describe('get_menu favourites', () => {
         { name: 'Broccoli soup (S)', favorite: false },
       ],
     })
+  })
+})
+
+describe('get_classmates', () => {
+  const at = (hm: string) => `2026-11-17T${hm}:00+01:00`
+  const mine = (title: string, from: string, to: string, place?: string) => ({
+    __typename: 'Lesson',
+    id: title,
+    title,
+    startTime: at(from),
+    endTime: at(to),
+    locations: place ? [{ name: place }] : [],
+  })
+  const theirs = (title: string, from: string, to: string, place?: string) => ({
+    id: title,
+    title,
+    startTime: at(from),
+    endTime: at(to),
+    allDay: false,
+    locations: place ? [{ name: place }] : [],
+  })
+  const friend = (id: string, firstName: string, lastName: string) => ({
+    id,
+    firstName,
+    lastName,
+  })
+
+  const setup = (
+    own: object[],
+    friends: ReturnType<typeof friend>[],
+    shared: Record<string, object[]>
+  ) =>
+    fakeQuivr({
+      getMySchedule: async () =>
+        ({ scheduleItems: { scheduleItems: own } }) as never,
+      getFriends: async () => ({ friendList: friends }) as never,
+      getFriendSchedules: async (ids: string[]) =>
+        ({
+          friendSchedules: ids.map(id => ({
+            friendId: id,
+            scheduleItems: shared[id] ?? [],
+          })),
+        }) as never,
+    })
+
+  it('reports an overlapping friend with the contract fields', async () => {
+    const quivr = setup(
+      [mine('Databases', '09:00', '11:00', 'V1.12')],
+      [friend('1', 'Lotte', 'Voorbeeld')],
+      { '1': [theirs('Chess club', '10:00', '12:00', 'Hall')] }
+    )
+
+    const result = await getClassmates.run({ date: '2026-11-17' }, quivr)
+
+    expect(result).toEqual({
+      date: '2026-11-17',
+      friendsChecked: 1,
+      classes: [
+        {
+          title: 'Databases',
+          start: at('09:00'),
+          end: at('11:00'),
+          location: 'V1.12',
+          classmates: [
+            {
+              id: '1',
+              name: 'Lotte V.',
+              isSameClass: false,
+              title: 'Chess club',
+              start: at('10:00'),
+              end: at('12:00'),
+              location: 'Hall',
+            },
+          ],
+        },
+      ],
+    })
+  })
+
+  it('flags a same-title overlap as the same class', async () => {
+    const quivr = setup(
+      [mine('Databases', '09:00', '11:00', 'V1.12')],
+      [friend('1', 'Lotte', 'Voorbeeld'), friend('2', 'Max', 'Mockdata')],
+      {
+        '1': [theirs('databases ', '09:00', '11:00', 'v1.12')],
+        '2': [theirs('Databases', '10:00', '12:00', 'V1.14')],
+      }
+    )
+
+    const result = (await getClassmates.run({ date: '2026-11-17' }, quivr)) as {
+      classes: { classmates: { id: string; isSameClass: boolean }[] }[]
+    }
+
+    expect(result.classes[0]?.classmates).toEqual([
+      expect.objectContaining({ id: '1', isSameClass: true }),
+      expect.objectContaining({ id: '2', isSameClass: false }),
+    ])
+  })
+
+  it('treats an unknown location as compatible with a matching title', async () => {
+    const quivr = setup(
+      [mine('Databases', '09:00', '11:00', 'V1.12')],
+      [friend('1', 'Lotte', 'Voorbeeld')],
+      { '1': [theirs('Databases', '09:00', '11:00')] }
+    )
+
+    const result = (await getClassmates.run({ date: '2026-11-17' }, quivr)) as {
+      classes: { classmates: { isSameClass: boolean }[] }[]
+    }
+
+    expect(result.classes[0]?.classmates[0]?.isSameClass).toBe(true)
+  })
+
+  it('does not match items that only touch end to start', async () => {
+    const quivr = setup(
+      [mine('Databases', '09:00', '11:00')],
+      [friend('1', 'Lotte', 'Voorbeeld')],
+      {
+        '1': [
+          theirs('Before', '08:00', '09:00'),
+          theirs('After', '11:00', '12:00'),
+        ],
+      }
+    )
+
+    const result = (await getClassmates.run({ date: '2026-11-17' }, quivr)) as {
+      friendsChecked: number
+      classes: { classmates: unknown[] }[]
+    }
+
+    expect(result.classes[0]?.classmates).toEqual([])
+    expect(result.friendsChecked).toBe(1)
+  })
+
+  it('keeps a class nobody shares, in start order', async () => {
+    const quivr = setup(
+      [mine('Afternoon', '14:00', '15:00'), mine('Morning', '09:00', '10:00')],
+      [friend('1', 'Lotte', 'Voorbeeld')],
+      { '1': [theirs('Afternoon', '14:30', '15:30')] }
+    )
+
+    const result = (await getClassmates.run({ date: '2026-11-17' }, quivr)) as {
+      classes: { title: string; classmates: unknown[] }[]
+    }
+
+    expect(result.classes.map(c => [c.title, c.classmates.length])).toEqual([
+      ['Morning', 0],
+      ['Afternoon', 1],
+    ])
+  })
+
+  it('ignores friends who share nothing', async () => {
+    const quivr = setup(
+      [mine('Databases', '09:00', '11:00')],
+      [friend('1', 'Lotte', 'Voorbeeld'), friend('2', 'Nina', 'Nepnaam')],
+      { '1': [theirs('Databases', '09:00', '11:00')] }
+    )
+
+    const result = (await getClassmates.run({ date: '2026-11-17' }, quivr)) as {
+      friendsChecked: number
+      classes: { classmates: unknown[] }[]
+    }
+
+    expect(result.friendsChecked).toBe(1)
+    expect(result.classes[0]?.classmates).toHaveLength(1)
+  })
+
+  it('reports no friends checked when nobody shares or has friends', async () => {
+    const quivr = fakeQuivr({
+      getMySchedule: async () =>
+        ({
+          scheduleItems: {
+            scheduleItems: [mine('Databases', '09:00', '11:00')],
+          },
+        }) as never,
+      getFriends: async () => ({ friendList: [] }) as never,
+    })
+
+    const result = await getClassmates.run({ date: '2026-11-17' }, quivr)
+
+    expect(result).toMatchObject({
+      friendsChecked: 0,
+      classes: [{ title: 'Databases', classmates: [] }],
+    })
+  })
+
+  it('ignores all-day items and keeps one entry per friend', async () => {
+    const quivr = setup(
+      [mine('Databases', '09:00', '11:00')],
+      [friend('1', 'Lotte', 'Voorbeeld')],
+      {
+        '1': [
+          { ...theirs('Holiday', '00:00', '23:59'), allDay: true },
+          theirs('Coffee', '09:00', '10:00'),
+          theirs('Databases', '10:00', '11:00'),
+        ],
+      }
+    )
+
+    const result = (await getClassmates.run({ date: '2026-11-17' }, quivr)) as {
+      classes: { classmates: { title: string }[] }[]
+    }
+
+    expect(result.classes[0]?.classmates.map(c => c.title)).toEqual([
+      'Databases',
+    ])
+  })
+
+  it('sorts same-class friends first, then by name', async () => {
+    const quivr = setup(
+      [mine('Databases', '09:00', '11:00', 'V1.12')],
+      [
+        friend('1', 'Anna', 'Voorbeeld'),
+        friend('2', 'Zoë', 'Mockdata'),
+        friend('3', 'Bram', 'Nepnaam'),
+        friend('4', 'Max', 'Mockdata'),
+      ],
+      {
+        '1': [theirs('Other', '09:00', '10:00')],
+        '2': [theirs('Databases', '09:00', '11:00', 'V1.12')],
+        '3': [theirs('Other', '10:00', '11:00')],
+        '4': [theirs('Databases', '09:00', '11:00', 'V1.12')],
+      }
+    )
+
+    const result = (await getClassmates.run({ date: '2026-11-17' }, quivr)) as {
+      classes: { classmates: { name: string }[] }[]
+    }
+
+    expect(result.classes[0]?.classmates.map(c => c.name)).toEqual([
+      'Max M.',
+      'Zoë M.',
+      'Anna V.',
+      'Bram N.',
+    ])
   })
 })
