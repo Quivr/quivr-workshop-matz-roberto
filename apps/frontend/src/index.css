@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+/* Class-based dark mode: toggled by a `dark` class on <html> (see src/theme). */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Design tokens from Quivr/Frontend web/app/index.css */
 @theme {
   --color-cardbg: #eeedee;
@@ -14,6 +17,11 @@
   --color-schedule-border-grey: #ddd;
   --color-main-text: #5c6161;
   --color-danger: #e74c3c;
+  /* Added for theming: roles that used to be hardcoded or overloaded. */
+  --color-surface: #ffffff; /* cards, bubbles, inputs (was bg-white) */
+  --color-muted: #566e86; /* secondary text on a surface */
+  --color-heading: #34495e; /* headings on the page background */
+  --color-on-diet: #ffffff; /* text on the veg/vegan badges */
 
   --font-title: 'bebas_neueregular', sans-serif;
   --font-sans:
@@ -64,6 +72,46 @@
   font-family: 'open_sansregular';
   src: url('/fonts/opensans-semibold-webfont.woff') format('woff');
   font-weight: bold;
+}
+
+/*
+ * Dark theme. Every colour in the app is one of the tokens above, so
+ * redefining them here flips the whole UI. Warm-neutral surfaces, the Quivr
+ * yellow kept as the accent, and the navy kept for the header and card bars.
+ * Body text is >= 8.6:1 on every surface, muted and danger text >= 5.3:1.
+ */
+.dark {
+  color-scheme: dark;
+  --color-schedule-bg-grey: #1d1b1a; /* page, insets, code blocks */
+  --color-surface: #292624;
+  --color-cardbg: #38342f; /* hover */
+  --color-schedule-border-grey: #45403c;
+  --color-main-text: #dcd7d2;
+  --color-muted: #a9a29b;
+  --color-heading: #f1ece6;
+  --color-main: #f5cc4a;
+  --color-sidenav-blue: #2b3948;
+  --color-sidenav-secondary: #53697f;
+  --color-danger: #ff6b5e;
+  --color-blue-pretty: #6cb2f5;
+  --color-vegan: #4ade80;
+  --color-vegetarian: #bef264;
+  --color-on-diet: #0f2a18;
+}
+
+/*
+ * Bridges for components that still hardcode colours (App, Header,
+ * MessageList). `:where` keeps specificity at .bg-white level so `hover:`
+ * utilities still win. Delete once those files use `bg-surface` and
+ * `text-heading`.
+ */
+@layer utilities {
+  :where(.dark) .bg-white {
+    background-color: var(--color-surface);
+  }
+  :where(.dark) .text-sidenav-blue:not(.bg-main) {
+    color: var(--color-heading);
+  }
 }
 
 body {

@@ -25,7 +25,7 @@ export function StudentCard({ result }: CardProps) {
           {initials(student)}
         </div>
         <div className="min-w-0">
-          <div className="font-title text-sidenav-blue text-2xl tracking-wide">
+          <div className="font-title text-heading text-2xl tracking-wide">
             {student.name}
           </div>
           <div className="text-main-text truncate text-xs">{student.email}</div>

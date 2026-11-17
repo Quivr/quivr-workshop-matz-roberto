@@ -104,7 +104,7 @@ export function LibraryCard({ result }: CardProps) {
         </ul>
       )}
       {unmeasured.length > 0 && (
-        <details className="border-schedule-border-grey text-sidenav-secondary mt-3 border-t pt-2 text-xs">
+        <details className="border-schedule-border-grey text-muted mt-3 border-t pt-2 text-xs">
           <summary className="cursor-pointer">
             {unmeasured.length}{' '}
             {unmeasured.length === 1 ? 'library' : 'libraries'} without sensor

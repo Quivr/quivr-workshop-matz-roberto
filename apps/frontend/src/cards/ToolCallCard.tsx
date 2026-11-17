@@ -16,11 +16,11 @@ export function ToolCallCard({
   const duration = durationMs === undefined ? '' : ` · ${durationMs} ms`
 
   return (
-    <details className="border-schedule-border-grey rounded-md border bg-white text-xs">
+    <details className="border-schedule-border-grey bg-surface rounded-md border text-xs">
       <summary className="hover:bg-schedule-bg-grey cursor-pointer rounded-md px-3 py-2 motion-safe:transition-colors">
         <span className="font-bold">🔧 {toolName}</span>
         <span
-          className={`${error ? 'text-danger' : 'text-sidenav-secondary'} motion-safe:transition-colors`}
+          className={`${error ? 'text-danger' : 'text-muted'} motion-safe:transition-colors`}
         >
           {' '}
           {status}
@@ -29,7 +29,7 @@ export function ToolCallCard({
         {isPending && (
           <span
             aria-hidden
-            className="border-sidenav-secondary ml-2 inline-block size-2.5 rounded-full border-2 border-t-transparent align-middle motion-safe:animate-spin"
+            className="border-muted ml-2 inline-block size-2.5 rounded-full border-2 border-t-transparent align-middle motion-safe:animate-spin"
           />
         )}
       </summary>

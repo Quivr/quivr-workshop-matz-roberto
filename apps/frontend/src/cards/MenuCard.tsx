@@ -22,12 +22,14 @@ const euro = (price: number) => `€${price.toFixed(2)}`
 function DietBadge({ dish }: { dish: Dish }) {
   if (dish.vegan) {
     return (
-      <span className="bg-vegan rounded px-1.5 text-xs text-white">vegan</span>
+      <span className="bg-vegan text-on-diet rounded px-1.5 text-xs">
+        vegan
+      </span>
     )
   }
   if (dish.vegetarian) {
     return (
-      <span className="bg-vegetarian rounded px-1.5 text-xs text-white">
+      <span className="bg-vegetarian text-on-diet rounded px-1.5 text-xs">
         veggie
       </span>
     )
@@ -38,7 +40,7 @@ function DietBadge({ dish }: { dish: Dish }) {
 function FavouriteStar() {
   return (
     <span
-      className="bg-main text-main-text shrink-0 rounded px-1 text-xs"
+      className="bg-main text-sidenav-blue shrink-0 rounded px-1 text-xs"
       title="One of your favourites"
       aria-label="favourite"
     >
