@@ -10,12 +10,16 @@ import { ToolGroup } from './ToolGroup'
 
 const AT_BOTTOM_PX = 48
 const AVATAR = 44
+/** Gap between an avatar and the content next to it. */
+const GAP = 8
 
 type Props = {
   cast: readonly string[]
   rows: Row[]
   durations: Record<string, number>
   error: string | null
+  /** Size of the avatar beside each balloon. */
+  avatarSize?: number
 }
 
 /** A character's avatar and balloon; the first and third sit left, the second right. */
@@ -23,8 +27,10 @@ function Speech({
   characterId,
   side,
   isSpeaking,
+  size,
   children,
 }: {
+  size: number
   characterId: string
   side: 'left' | 'right'
   isSpeaking: boolean
@@ -38,7 +44,7 @@ function Speech({
       <CharacterAvatar
         characterId={characterId}
         clip={isSpeaking ? 'talking' : 'idle'}
-        size={AVATAR}
+        size={size}
       />
       <div
         className={`max-w-[85%] min-w-0 ${side === 'right' ? 'flex flex-col items-end' : ''}`}
@@ -63,7 +69,13 @@ function Speech({
 }
 
 /** The one shared conversation. Owns its scroll container. */
-export function ArgumentThread({ cast, rows, durations, error }: Props) {
+export function ArgumentThread({
+  cast,
+  rows,
+  durations,
+  error,
+  avatarSize = AVATAR,
+}: Props) {
   const { scrollRef, contentRef, scrollToBottom } = useStickToBottom()
   const sideOf = (id: string) => (cast.indexOf(id) % 2 === 0 ? 'left' : 'right')
 
@@ -113,11 +125,11 @@ export function ArgumentThread({ cast, rows, durations, error }: Props) {
             return (
               <div
                 key={row.id}
-                className={
-                  side === 'right'
-                    ? 'mr-[3.25rem] ml-auto max-w-md'
-                    : 'ml-[3.25rem] max-w-md'
-                }
+                className={`max-w-md ${side === 'right' ? 'ml-auto' : ''}`}
+                style={{
+                  [side === 'right' ? 'marginRight' : 'marginLeft']:
+                    avatarSize + GAP,
+                }}
               >
                 <ToolGroup
                   calls={row.calls}
@@ -131,6 +143,7 @@ export function ArgumentThread({ cast, rows, durations, error }: Props) {
               key={row.id}
               characterId={row.speaker}
               side={sideOf(row.speaker)}
+              size={avatarSize}
               isSpeaking={row.kind === 'waiting' || row.isSpeaking}
             >
               {row.kind === 'say' && <Markdown>{row.text}</Markdown>}

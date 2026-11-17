@@ -198,6 +198,8 @@ type Props = {
   showFromHeight?: 560 | 760
   /** Overrides how the characters look (an argument going on). Gus on a break still dozes. */
   clips?: Partial<Record<string, CharacterClip>>
+  /** A line that is said over the gag and the banter (the bar reacting to an argument). */
+  reactionLine?: GagLine | null
   breakState: BreakSnapshot
   gagLine: GagLine | null
   /** Ambient chat about the student's schedule. Never plays over the gag. */
@@ -209,12 +211,13 @@ type Props = {
 export function BarScene({
   showFromHeight = 560,
   clips = {},
+  reactionLine = null,
   breakState,
   gagLine,
   banterLine,
   pip,
 }: Props) {
-  const line = gagLine ?? banterLine
+  const line = reactionLine ?? gagLine ?? banterLine
   const [bartender] = charactersByRole('bartender')
   const beerLovers = charactersByRole('beer-lover')
   const [sodaLover] = charactersByRole('soda-lover')

@@ -67,6 +67,11 @@ export function HomeScreen({ onSelect }: Props) {
               description="Relax and hang out."
               onClick={() => onSelect('chill')}
             />
+            <ModeCard
+              title="Party"
+              description="The bar and the argument, all at once, with you in the middle."
+              onClick={() => onSelect('party')}
+            />
           </div>
         </section>
         <section className="space-y-2">

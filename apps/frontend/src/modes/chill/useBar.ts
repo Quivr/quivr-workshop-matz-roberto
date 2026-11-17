@@ -8,8 +8,6 @@ type Options = {
   model: string
   /** Model for the one background lookup; defaults to `model`. */
   factsModel?: string
-  /** True while something else holds the floor: the gag and the banter wait. */
-  isBusy?: () => boolean
   onBreakStart?: () => void
   onBreakEnd?: () => void
 }
@@ -23,7 +21,6 @@ type Options = {
 export function useBar({
   model,
   factsModel,
-  isBusy,
   onBreakStart,
   onBreakEnd,
 }: Options) {
@@ -33,7 +30,6 @@ export function useBar({
   const { gag, banter } = bar
   const handlersRef = useRef({ onBreakStart, onBreakEnd })
   useEffect(() => {
-    bar.setBusy(isBusy ?? (() => false))
     handlersRef.current = { onBreakStart, onBreakEnd }
   })
   const breakState = useSyncExternalStore(
