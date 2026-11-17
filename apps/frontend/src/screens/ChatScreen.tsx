@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 
 import { Composer } from '../components/Composer'
 import { Header } from '../components/Header'
 import { MessageList } from '../components/MessageList'
 import { TracesPanel } from '../components/TracesPanel'
 import { useStickToBottom } from '../components/useStickToBottom'
-import { useAgentChat } from '../useAgentChat'
+import type { useAgentChat } from '../useAgentChat'
 import type { ScreenProps } from './types'
 
 const EXAMPLES = [
@@ -14,22 +14,18 @@ const EXAMPLES = [
   "What's vegetarian at the student restaurants tomorrow?",
 ]
 
+type Props = ScreenProps & { chat: ReturnType<typeof useAgentChat> }
+
 export function ChatScreen({
+  chat,
   models,
   model,
   onModelChange,
   onHome,
-}: ScreenProps) {
-  const chat = useAgentChat()
+}: Props) {
   const [isShowingTraces, setIsShowingTraces] = useState(false)
   const { scrollRef, contentRef, isAtBottom, scrollToBottom } =
     useStickToBottom<HTMLElement>()
-
-  const resetRef = useRef(chat.reset)
-  useEffect(() => {
-    resetRef.current = chat.reset
-  })
-  useEffect(() => () => resetRef.current(), [])
 
   const handleSend = (text: string) => {
     scrollToBottom()
