@@ -49,6 +49,7 @@ export const sendDateInvite = defineTool({
       when: `${date} ${time}`,
       where: place,
       message,
+      photoUrl: student.photoUrl,
       reply: student.reply
         .replace('{when}', `${day}, ${time}`)
         .replace('{where}', place),

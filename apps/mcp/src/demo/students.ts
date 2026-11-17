@@ -57,6 +57,12 @@ export type DemoStudent = {
   mutualFriends: number
   /** What they answer to an invite. `{when}` and `{where}` are filled in. */
   reply: string
+  /** Served by the frontend from `apps/frontend/public`. */
+  photoUrl?: string
+  /** Messages they send right after you match. */
+  matchMessages?: string[]
+  /** Always listed third in find_matches, whatever the gender filter. */
+  featured?: boolean
 }
 
 /**
@@ -153,6 +159,49 @@ export const demoMe = {
 }
 
 export const students: DemoStudent[] = [
+  {
+    id: 'willem',
+    firstName: 'Willem',
+    age: 22,
+    gender: 'man',
+    lookingFor: 'someone to share a tiramisu with',
+    programme: 'Computer Science',
+    year: 'Master 1',
+    courses: ['Databases', 'Software Engineering', 'Operating Systems'],
+    timetable: [
+      cls(1, '10:30', '12:30', 'Databases', 'Arenberg 200A 00.02'),
+      cls(2, '13:00', '15:00', 'Databases', 'Arenberg 200A 00.02'),
+      cls(3, '10:30', '12:30', 'Operating Systems', 'Arenberg 200B 00.05'),
+      cls(4, '14:00', '17:00', 'Software Engineering', 'Arenberg 200N 00.08'),
+      busy(3, '18:00', '19:30', 'Running club'),
+    ],
+    favouriteDishes: ['Tiramisu', 'Creamy tomato soup (B)'],
+    favouriteRestaurantId: '6',
+    favouriteLibraryId: '2',
+    favouriteFakbarId: 'bernoulli',
+    usualSpot: { kind: 'library', id: '2' },
+    interests: ['board games', 'running', 'live music', 'cooking'],
+    bio: 'Professional ivy-wall model. Writes clean code and even cleaner puns.',
+    icebreaker: 'Rate my ivy wall out of 10. Be honest.',
+    vibe: 'posing in front of an ivy wall',
+    funFacts: {
+      coffeeOrder: 'Cappuccino with a heart in the foam, obviously',
+      examSnack: 'Speculoos, one per solved exercise',
+      hotTake: 'Tiramisu is a food group',
+      greenFlag: 'Holds the 2Bergen door for everyone',
+      karaokeSong: 'Can’t Help Falling in Love',
+    },
+    mutualFriends: 7,
+    reply:
+      'Yes!! {when} at {where}. I’ll be the one grinning like I just passed Databases 😄',
+    photoUrl: '/demo/willem.jpg',
+    matchMessages: [
+      'Hey you 👋 I was really hoping you’d swipe right. The ivy wall and I are very happy.',
+      'Fair warning: I will steal one spoonful of your tiramisu at Alma ESAT2. Just one. Maybe two. 🍰',
+      'Free for lunch on Thursday? I’ll bring the bad puns, you bring the good company 😊',
+    ],
+    featured: true,
+  },
   {
     id: 'lotte',
     firstName: 'Lotte',

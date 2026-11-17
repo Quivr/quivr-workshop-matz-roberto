@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 
 import { useChatActions } from './chat-actions'
 import { DemoBadge } from './DemoBadge'
@@ -18,6 +18,7 @@ type Invite = {
   where: string
   message: string
   reply: string
+  photoUrl?: string
 }
 
 type InviteArgs = {
@@ -90,14 +91,32 @@ const splitWhen = (when: string) => {
   return match ? formatWhen(match[1], match[2]) : when
 }
 
-function Avatar({ name, size }: { name: string; size: 'sm' | 'md' }) {
+function Avatar({
+  name,
+  size,
+  photoUrl,
+}: {
+  name: string
+  size: 'sm' | 'md'
+  photoUrl?: string
+}) {
+  const [isBroken, setIsBroken] = useState(false)
   const box = size === 'md' ? 'size-9 text-xs' : 'size-6 text-[9px]'
   return (
     <span
       aria-hidden
-      className={`${box} flex shrink-0 items-center justify-center rounded-full bg-linear-to-br from-pink-400 via-rose-400 to-orange-300 font-bold text-white shadow-sm ring-2 ring-white`}
+      className={`${box} flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-pink-400 via-rose-400 to-orange-300 font-bold text-white shadow-sm ring-2 ring-white`}
     >
-      {initials(name) || '?'}
+      {photoUrl && !isBroken ? (
+        <img
+          src={photoUrl}
+          alt=""
+          className="size-full object-cover"
+          onError={() => setIsBroken(true)}
+        />
+      ) : (
+        initials(name) || '?'
+      )}
     </span>
   )
 }
@@ -218,6 +237,7 @@ function Delivered({ invite }: { invite: Invite }) {
               <Avatar
                 name={invite.to}
                 size="sm"
+                photoUrl={invite.photoUrl}
               />
               <span className="flex gap-1 rounded-2xl rounded-bl-md bg-zinc-200/90 px-3 py-2.5">
                 {[0, 1, 2].map(i => (
@@ -237,6 +257,7 @@ function Delivered({ invite }: { invite: Invite }) {
               <Avatar
                 name={invite.to}
                 size="sm"
+                photoUrl={invite.photoUrl}
               />
               <p className="max-w-[80%] rounded-2xl rounded-bl-md bg-white px-3 py-2 text-zinc-800 shadow-sm ring-1 ring-zinc-200/80">
                 <span className="sr-only">{invite.to} replied: </span>

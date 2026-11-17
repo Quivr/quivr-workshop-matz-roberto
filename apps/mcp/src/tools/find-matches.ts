@@ -12,6 +12,7 @@ import { addDays } from '../quivr/dates.js'
 import { dateSchema, defineTool } from './define-tool.js'
 
 const MAX_RESULTS = 5
+const FEATURED_POSITION = 2
 const WINDOW_DAYS = 7
 
 export const findMatches = defineTool({
@@ -45,11 +46,13 @@ export const findMatches = defineTool({
     const wantedInterest = interest?.trim().toLowerCase()
     const wantedProgramme = programme?.trim().toLowerCase()
 
-    const matches = students
+    const ranked = students
       .filter(
         student => !wantedName || student.firstName.toLowerCase() === wantedName
       )
-      .filter(student => !gender || student.gender === gender)
+      .filter(
+        student => !gender || student.featured || student.gender === gender
+      )
       .filter(
         student =>
           !wantedInterest ||
@@ -91,10 +94,23 @@ export const findMatches = defineTool({
           funFacts: student.funFacts,
           spot: placeOf(student.usualSpot),
           sharedFreeSlots: slots.slice(0, 6),
+          photoUrl: student.photoUrl,
+          featured: student.featured ?? false,
+          matchMessages: student.matchMessages ?? [
+            `Hey! 👋 Glad we matched.`,
+            student.icebreaker,
+          ],
         }
       })
       .sort((a, b) => b.score - a.score)
-      .slice(0, MAX_RESULTS)
+    const featured = ranked.filter(match => match.featured)
+    const others = ranked.filter(match => !match.featured)
+    // Featured profiles always make the list, in third place.
+    const matches = [
+      ...others.slice(0, FEATURED_POSITION),
+      ...featured,
+      ...others.slice(FEATURED_POSITION),
+    ].slice(0, MAX_RESULTS)
 
     return {
       demo: true,

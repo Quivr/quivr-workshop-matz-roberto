@@ -29,6 +29,10 @@ export type Match = {
   }
   spot: { name: string; kind: SpotKind; area: MapArea }
   sharedFreeSlots: { date: string; start: string; end: string }[]
+  photoUrl?: string
+  featured?: boolean
+  /** What they send right after you match. */
+  matchMessages?: string[]
 }
 
 export type MatchesResult = {
@@ -98,23 +102,37 @@ const AVATAR_SIZES = {
   lg: 'size-16 text-3xl ring-4',
 }
 
-/** Photo-less avatar: initials on a gradient picked from the name. */
+/** Avatar: the photo when there is one (and it loads), else initials on a gradient. */
 export function Avatar({
   name,
   size = 'md',
   className = '',
+  photoUrl,
 }: {
   name: string
   size?: keyof typeof AVATAR_SIZES
   className?: string
+  photoUrl?: string
 }) {
+  const [isBroken, setIsBroken] = useState(false)
+  const hasPhoto = Boolean(photoUrl) && !isBroken
+
   return (
     <span
       aria-hidden
-      className={`font-title text-sidenav-blue inline-flex shrink-0 items-center justify-center rounded-full pt-0.5 leading-none shadow-md ring-white ${AVATAR_SIZES[size]} ${className}`}
+      className={`font-title text-sidenav-blue inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full leading-none shadow-md ring-white ${hasPhoto ? '' : 'pt-0.5'} ${AVATAR_SIZES[size]} ${className}`}
       style={{ background: gradientOf(name) }}
     >
-      {initials(name)}
+      {hasPhoto ? (
+        <img
+          src={photoUrl}
+          alt=""
+          className="size-full object-cover"
+          onError={() => setIsBroken(true)}
+        />
+      ) : (
+        initials(name)
+      )}
     </span>
   )
 }
@@ -285,6 +303,7 @@ function MatchFace({ match, isLocked, kind, reasons }: MatchFaceProps) {
         <Avatar
           name={isLocked ? '?' : match.firstName}
           size="lg"
+          photoUrl={isLocked ? undefined : match.photoUrl}
         />
         <div className="min-w-0 flex-1">
           <h3 className="font-title text-sidenav-blue text-[1.7rem] leading-none">

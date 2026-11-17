@@ -614,6 +614,7 @@ function Likes({ likes, verdicts, openId, onOpen }: LikesProps) {
               <Avatar
                 name={match.firstName}
                 size="sm"
+                photoUrl={match.photoUrl}
               />
               <span
                 aria-hidden
@@ -671,6 +672,7 @@ function Celebration({ match, isSuper }: { match: Match; isSuper: boolean }) {
           <Avatar
             name={match.firstName}
             size="lg"
+            photoUrl={match.photoUrl}
           />
           <span className="text-xs font-bold">{match.firstName}</span>
         </span>
@@ -701,7 +703,10 @@ function MatchedPanel({ match, isSuper, onBack }: MatchedPanelProps) {
           className="flex -space-x-3"
         >
           <Avatar name="You" />
-          <Avatar name={name} />
+          <Avatar
+            name={name}
+            photoUrl={match.photoUrl}
+          />
         </div>
         <div className="min-w-0 flex-1">
           <p className="font-title text-sidenav-blue text-2xl leading-none">
@@ -712,10 +717,14 @@ function MatchedPanel({ match, isSuper, onBack }: MatchedPanelProps) {
           </p>
         </div>
       </div>
-      {match.icebreaker && (
-        <p className="pt-1 text-xs text-[#7a1f45]">
-          💬 Open with: “{match.icebreaker}”
-        </p>
+      {match.matchMessages?.length ? (
+        <MatchChat match={match} />
+      ) : (
+        match.icebreaker && (
+          <p className="pt-1 text-xs text-[#7a1f45]">
+            💬 Open with: “{match.icebreaker}”
+          </p>
+        )
       )}
       <NextSteps
         title={`With ${name}`}
@@ -731,6 +740,44 @@ function MatchedPanel({ match, isSuper, onBack }: MatchedPanelProps) {
         </button>
       </div>
     </div>
+  )
+}
+
+/** Their first messages after the match: typing dots, then each bubble pops in. */
+function MatchChat({ match }: { match: Match }) {
+  const messages = match.matchMessages ?? []
+
+  return (
+    <ol
+      aria-label={`Messages from ${match.firstName}`}
+      aria-live="polite"
+      className="space-y-1.5 pt-2"
+    >
+      {messages.map((message, index) => (
+        <li
+          key={index}
+          className="match-chat__row"
+          style={vars({ '--d': `${0.5 + index * 1.9}s` })}
+        >
+          <span
+            aria-hidden
+            className="match-chat__typing"
+          >
+            <span />
+            <span />
+            <span />
+          </span>
+          <span className="match-chat__msg">
+            <Avatar
+              name={match.firstName}
+              size="sm"
+              photoUrl={match.photoUrl}
+            />
+            <span className="match-chat__bubble">{message}</span>
+          </span>
+        </li>
+      ))}
+    </ol>
   )
 }
 
