@@ -17,12 +17,12 @@
   background:
     radial-gradient(
       closest-side at 30% 50%,
-      rgb(255 215 80 / 0.55),
+      color-mix(in srgb, var(--color-main) 55%, transparent),
       transparent
     ),
     radial-gradient(
       closest-side at 70% 50%,
-      rgb(251 113 133 / 0.3),
+      color-mix(in srgb, var(--color-love) 30%, transparent),
       transparent
     );
   filter: blur(18px);
@@ -48,7 +48,7 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgb(255 255 255 / 0.85),
+    color-mix(in srgb, white 85%, transparent),
     transparent
   );
   transform: translateX(-100%);
@@ -68,7 +68,8 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  box-shadow: 0 8px 20px -10px rgb(52 73 94 / 0.35);
+  box-shadow: 0 8px 20px -10px
+    color-mix(in srgb, var(--color-shade) 35%, transparent);
   opacity: 0;
   transition: opacity 0.2s ease-out;
   pointer-events: none;
@@ -87,15 +88,27 @@
 .empty-state__example--love {
   border: 1.5px solid transparent;
   background:
-    linear-gradient(#fff, #fff) padding-box,
-    linear-gradient(120deg, #fb7185, #f472b6, #e11d48) border-box;
-  color: #9f1239;
+    linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
+    linear-gradient(
+        120deg,
+        var(--color-love),
+        var(--color-love-text),
+        var(--color-love-rose)
+      )
+      border-box;
+  color: var(--color-love-text);
 }
 
 .empty-state__example--love:hover {
   background:
-    linear-gradient(#fff5f8, #fff5f8) padding-box,
-    linear-gradient(120deg, #fb7185, #f472b6, #e11d48) border-box;
+    linear-gradient(var(--color-love-wash), var(--color-love-wash)) padding-box,
+    linear-gradient(
+        120deg,
+        var(--color-love),
+        var(--color-love-text),
+        var(--color-love-rose)
+      )
+      border-box;
 }
 
 /* Rose glow that breathes behind the button. */
@@ -104,14 +117,16 @@
   position: absolute;
   inset: -1px;
   border-radius: inherit;
-  box-shadow: 0 0 18px 2px rgb(244 114 182 / 0.45);
+  box-shadow: 0 0 18px 2px
+    color-mix(in srgb, var(--color-love) 45%, transparent);
   opacity: 0.35;
   pointer-events: none;
   animation: empty-state-breathe 2.4s ease-in-out infinite alternate;
 }
 
 .empty-state__example--love::after {
-  box-shadow: 0 10px 24px -10px rgb(225 29 72 / 0.5);
+  box-shadow: 0 10px 24px -10px
+    color-mix(in srgb, var(--color-love-rose) 50%, transparent);
 }
 
 .empty-state__heart {

@@ -99,8 +99,7 @@ const CROWDS: Record<Crowd, { label: string; level: number; color: string }> = {
   CLOSED: { label: 'Closed', level: 0, color: 'bg-schedule-border-grey' },
 }
 
-const LABEL =
-  'text-sidenav-secondary text-[10px] font-bold tracking-[0.18em] uppercase'
+const LABEL = 'text-muted text-[10px] font-bold tracking-[0.18em] uppercase'
 
 const kindOf = (kind: string) => KINDS[kind as Kind] ?? KINDS.lunch
 const venueKindOf = (kind: string) =>
@@ -221,7 +220,7 @@ function Band({
           {children}
         </h3>
       </div>
-      <span className="shrink-0 rounded-full bg-white">
+      <span className="bg-surface shrink-0 rounded-full">
         <DemoBadge note={note} />
       </span>
     </header>
@@ -299,7 +298,7 @@ function CrowdMeter({ crowd }: { crowd: Crowd }) {
         ))}
       </span>
       <span>
-        Expected crowd: <strong className="text-sidenav-blue">{label}</strong>
+        Expected crowd: <strong className="text-heading">{label}</strong>
       </span>
     </div>
   )
@@ -322,7 +321,7 @@ function OccupancyBar({ percent }: { percent: number }) {
         />
       </span>
       <span>
-        <strong className="text-sidenav-blue">{value}%</strong> full right now
+        <strong className="text-heading">{value}%</strong> full right now
       </span>
     </div>
   )
@@ -361,7 +360,7 @@ function MiniMap({ venue }: { venue: Venue }) {
   return (
     <figure className="date-minimap min-w-0 grow basis-44">
       <div
-        className="ring-sidenav-blue/10 relative overflow-hidden rounded-xl shadow-inner ring-1"
+        className="ring-heading/10 relative overflow-hidden rounded-xl shadow-inner ring-1"
         style={{ aspectRatio: `${MAP_WIDTH} / ${MAP_HEIGHT}` }}
       >
         <div
@@ -411,7 +410,7 @@ function MiniMap({ venue }: { venue: Venue }) {
           </LeuvenMap>
         </div>
       </div>
-      <figcaption className="text-sidenav-secondary mt-1.5 truncate text-[11px]">
+      <figcaption className="text-muted mt-1.5 truncate text-[11px]">
         <span aria-hidden>📍 </span>
         {venue.name}, {areaName(venue.area)}
       </figcaption>
@@ -426,7 +425,7 @@ function Barcode({ code }: { code: string }) {
         aria-hidden
         className="date-barcode"
       />
-      <p className="text-sidenav-secondary mt-1 font-mono text-[10px] tracking-[0.25em]">
+      <p className="text-muted mt-1 font-mono text-[10px] tracking-[0.25em]">
         {code}
       </p>
     </div>
@@ -489,12 +488,12 @@ function FoundTicket({ plan }: { plan: Plan }) {
           <div className="text-main-text space-y-4 px-4 pt-3 pb-4 text-sm">
             <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3">
               <Field label="Date">
-                <span className="font-title text-sidenav-blue text-3xl leading-none tracking-wide">
+                <span className="font-title text-heading text-3xl leading-none tracking-wide">
                   {shortDate(plan.date)}
                 </span>
               </Field>
               <Field label="Time">
-                <span className="font-title text-sidenav-blue text-3xl leading-none tracking-wide whitespace-nowrap">
+                <span className="font-title text-heading text-3xl leading-none tracking-wide whitespace-nowrap">
                   {plan.slot.start}
                   <span
                     aria-hidden
@@ -506,7 +505,7 @@ function FoundTicket({ plan }: { plan: Plan }) {
                   {plan.slot.end}
                 </span>
                 {minutes > 0 && (
-                  <span className="text-sidenav-secondary ml-2 text-xs whitespace-nowrap">
+                  <span className="text-muted ml-2 text-xs whitespace-nowrap">
                     {duration(minutes)}
                   </span>
                 )}
@@ -523,10 +522,10 @@ function FoundTicket({ plan }: { plan: Plan }) {
                   >
                     {venueKind.emoji}
                   </span>
-                  <span className="text-sidenav-blue text-base font-bold">
+                  <span className="text-heading text-base font-bold">
                     {venue.name}
                   </span>
-                  <span className="bg-sidenav-blue/8 text-sidenav-secondary rounded-full px-2 py-0.5 text-[11px]">
+                  <span className="bg-heading/8 text-muted rounded-full px-2 py-0.5 text-[11px]">
                     {areaName(venue.area)}
                   </span>
                 </div>
@@ -552,10 +551,10 @@ function FoundTicket({ plan }: { plan: Plan }) {
                       <DietBadge dish={dish} />
                       <span
                         aria-hidden
-                        className="border-sidenav-secondary/40 min-w-4 flex-1 border-b border-dotted"
+                        className="border-muted/40 min-w-4 flex-1 border-b border-dotted"
                       />
                       {dish.priceEur !== undefined && (
-                        <span className="text-sidenav-blue shrink-0 font-bold tabular-nums">
+                        <span className="text-heading shrink-0 font-bold tabular-nums">
                           {euro(dish.priceEur)}
                         </span>
                       )}
@@ -590,9 +589,7 @@ function FoundTicket({ plan }: { plan: Plan }) {
 
             <footer className="border-schedule-border-grey space-y-2 border-t border-dashed pt-3">
               {plan.caveat && (
-                <p className="text-sidenav-secondary text-xs italic">
-                  {plan.caveat}
-                </p>
+                <p className="text-muted text-xs italic">{plan.caveat}</p>
               )}
               <SendInviteButton plan={plan} />
               <NextSteps
@@ -609,7 +606,7 @@ function FoundTicket({ plan }: { plan: Plan }) {
           <div className="flex min-w-0 grow basis-40 flex-col justify-end gap-2">
             <div className="flex items-end justify-between gap-2">
               <div>
-                <p className="font-title text-sidenav-blue text-3xl leading-none tracking-wider">
+                <p className="font-title text-heading text-3xl leading-none tracking-wider">
                   Admit 2
                 </p>
                 <p className={LABEL}>
@@ -653,12 +650,12 @@ function NoDateTicket({ plan }: { plan: NoPlan }) {
           <div className="text-main-text space-y-3 px-4 pt-3 pb-5 text-sm">
             <dl className="grid grid-cols-[auto_1fr] gap-x-6">
               <Field label="Date">
-                <span className="font-title text-sidenav-secondary text-3xl leading-none tracking-wide">
+                <span className="font-title text-muted text-3xl leading-none tracking-wide">
                   {shortDate(plan.date)}
                 </span>
               </Field>
             </dl>
-            <div className="flex items-start gap-3 rounded-xl bg-rose-50 p-3 ring-1 ring-rose-200/70">
+            <div className="bg-love-wash ring-love-line flex items-start gap-3 rounded-xl p-3 ring-1">
               <span
                 role="img"
                 aria-label="Heartbroken"
@@ -667,7 +664,7 @@ function NoDateTicket({ plan }: { plan: NoPlan }) {
                 💔
               </span>
               <div>
-                <p className="font-title text-sidenav-blue text-xl tracking-wide">
+                <p className="font-title text-heading text-xl tracking-wide">
                   No date this time
                 </p>
                 <p>{plan.reason}</p>
@@ -703,9 +700,7 @@ function VoidStub({
       <p className="date-stamp font-title rounded-md px-3 py-0.5 text-2xl tracking-[0.15em]">
         {stamp}
       </p>
-      <p className="font-title text-sidenav-secondary text-2xl tracking-wider">
-        Admit 0
-      </p>
+      <p className="font-title text-muted text-2xl tracking-wider">Admit 0</p>
       <div className="w-full max-w-48">
         <Barcode code={code} />
       </div>
@@ -742,20 +737,20 @@ function DateExtras({
   return (
     <div className="space-y-3">
       {mission.length > 0 && (
-        <section className="rounded-2xl border border-rose-200 bg-rose-50/80 p-4 text-sm">
-          <h4 className="font-title text-sidenav-blue text-xl">
+        <section className="border-love-line bg-love-wash/80 rounded-2xl border p-4 text-sm">
+          <h4 className="font-title text-heading text-xl">
             🎬 Your meet-cute mission
           </h4>
-          <p className="text-sidenav-secondary text-xs">
+          <p className="text-muted text-xs">
             A playful suggestion for this fictional date.
           </p>
           <ol className="mt-3 grid gap-2 sm:grid-cols-3">
             {mission.map((step, index) => (
               <li
                 key={step.title}
-                className="rounded-xl bg-white p-3 shadow-sm"
+                className="bg-surface rounded-xl p-3 shadow-sm"
               >
-                <span className="text-xs font-bold text-rose-600">
+                <span className="text-love-text text-xs font-bold">
                   ACT {index + 1}
                 </span>
                 <h5 className="font-bold">{step.title}</h5>
@@ -767,11 +762,9 @@ function DateExtras({
       )}
 
       {onAction && (
-        <section className="rounded-2xl border border-sky-200 bg-sky-50/80 p-4 text-sm">
-          <h4 className="font-title text-sidenav-blue text-xl">
-            🔀 Plot twist
-          </h4>
-          <p className="text-sidenav-secondary text-xs">
+        <section className="border-blue-pretty/30 bg-blue-pretty/10 rounded-2xl border p-4 text-sm">
+          <h4 className="font-title text-heading text-xl">🔀 Plot twist</h4>
+          <p className="text-muted text-xs">
             Same person, same day, a different kind of date.
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -785,7 +778,7 @@ function DateExtras({
                     `Replan my fictional demo date with ${plan.student.firstName} on ${plan.date}. Call plan_date with kind ${option.kind} and twist ${option.twist}. Show the new plan and say which parts are simulated.`
                   )
                 }
-                className="text-sidenav-blue rounded-full border border-sky-200 bg-white px-3 py-1.5 text-xs font-bold hover:bg-sky-100 disabled:opacity-50"
+                className="text-heading border-blue-pretty/30 bg-surface hover:bg-blue-pretty/15 rounded-full border px-3 py-1.5 text-xs font-bold disabled:opacity-50"
               >
                 {option.label}
               </button>
@@ -795,18 +788,16 @@ function DateExtras({
       )}
 
       {drafts.length > 0 && onCompose && (
-        <section className="rounded-2xl border border-fuchsia-200 bg-fuchsia-50/80 p-4 text-sm">
-          <h4 className="font-title text-sidenav-blue text-xl">
-            💌 Wingman drafts
-          </h4>
-          <p className="text-sidenav-secondary text-xs">
+        <section className="border-love-violet/30 bg-love-violet/10 rounded-2xl border p-4 text-sm">
+          <h4 className="font-title text-heading text-xl">💌 Wingman drafts</h4>
+          <p className="text-muted text-xs">
             Pick a tone, edit the draft, then ask before sending.
           </p>
           <div className="mt-2 space-y-2">
             {drafts.map(draft => (
               <div
                 key={draft.tone}
-                className="rounded-xl bg-white p-3 shadow-sm"
+                className="bg-surface rounded-xl p-3 shadow-sm"
               >
                 <p className="text-xs font-bold">{TONE_LABELS[draft.tone]}</p>
                 <p className="mt-1 text-xs">“{draft.message}”</p>
@@ -818,7 +809,7 @@ function DateExtras({
                       `Prepare an invite draft for ${plan.student.firstName} on ${plan.date} at ${plan.slot.start} at ${plan.venue.name}. Use this exact message: ${JSON.stringify(draft.message)}. Do not send it yet. Show me the full draft and ask me to confirm.`
                     )
                   }
-                  className="mt-2 rounded-full bg-fuchsia-100 px-3 py-1 text-xs font-bold text-fuchsia-900 hover:bg-fuchsia-200 disabled:opacity-50"
+                  className="bg-love-violet/15 text-heading hover:bg-love-violet/25 mt-2 rounded-full px-3 py-1 text-xs font-bold disabled:opacity-50"
                 >
                   Use this draft
                 </button>

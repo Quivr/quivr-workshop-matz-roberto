@@ -3,12 +3,17 @@
 /* ───────────── Date ticket ───────────── */
 
 .date-ticket {
-  --ticket-navy: var(--color-sidenav-blue, #34495e);
-  --ticket-rose: #e11d74;
+  --ticket-navy: var(--color-sidenav-blue);
+  --ticket-ink: var(--color-heading);
+  --ticket-shade: var(--color-shade);
   --notch: 11px;
   container: ticket / inline-size;
-  filter: drop-shadow(0 1px 1px rgb(52 73 94 / 0.1))
-    drop-shadow(0 10px 18px rgb(52 73 94 / 0.16));
+  filter: drop-shadow(
+      0 1px 1px color-mix(in srgb, var(--ticket-shade) 10%, transparent)
+    )
+    drop-shadow(
+      0 10px 18px color-mix(in srgb, var(--ticket-shade) 16%, transparent)
+    );
 }
 
 .date-ticket__body {
@@ -28,10 +33,10 @@
   background:
     radial-gradient(
       120% 70% at 100% 100%,
-      rgb(255 228 238 / 0.7),
+      color-mix(in srgb, var(--color-love-wash-2) 70%, transparent),
       transparent 60%
     ),
-    #fff;
+    var(--color-surface);
   -webkit-mask:
     radial-gradient(circle var(--notch) at 0 100%, #0000 98%, #000) left / 51%
       100% no-repeat,
@@ -47,8 +52,12 @@
 .date-ticket__stub {
   border-radius: 0 0 16px 16px;
   background:
-    radial-gradient(120% 80% at 0 0, rgb(255 215 80 / 0.28), transparent 65%),
-    #fffdf6;
+    radial-gradient(
+      120% 80% at 0 0,
+      color-mix(in srgb, var(--color-main) 28%, transparent),
+      transparent 65%
+    ),
+    color-mix(in srgb, var(--color-surface) 94%, var(--color-main));
   transform-origin: 100% 0;
   -webkit-mask:
     radial-gradient(circle var(--notch) at 0 0, #0000 98%, #000) left / 51% 100%
@@ -72,7 +81,7 @@
   height: 4px;
   background: radial-gradient(
       circle,
-      rgb(52 73 94 / 0.35) 1.4px,
+      color-mix(in srgb, var(--ticket-ink) 35%, transparent) 1.4px,
       transparent 1.9px
     )
     0 0 / 10px 4px repeat-x;
@@ -131,24 +140,53 @@
   background:
     radial-gradient(
       90% 140% at 100% 0,
-      rgb(255 215 80 / 0.22),
+      color-mix(in srgb, var(--color-main) 22%, transparent),
       transparent 55%
     ),
-    linear-gradient(115deg, var(--ticket-navy) 0%, #45466f 50%, #b02a68 100%);
+    linear-gradient(
+      115deg,
+      var(--ticket-navy) 0%,
+      color-mix(in srgb, var(--ticket-navy) 55%, var(--color-love-deep)) 50%,
+      var(--color-love-deep) 100%
+    );
 }
 
 .date-ticket--faded {
-  filter: drop-shadow(0 1px 1px rgb(52 73 94 / 0.08))
-    drop-shadow(0 6px 12px rgb(52 73 94 / 0.1)) saturate(0.55);
+  filter: drop-shadow(
+      0 1px 1px color-mix(in srgb, var(--ticket-shade) 8%, transparent)
+    )
+    drop-shadow(
+      0 6px 12px color-mix(in srgb, var(--ticket-shade) 10%, transparent)
+    )
+    saturate(0.55);
 }
 
 .date-ticket--faded .date-ticket__main,
 .date-ticket--faded .date-ticket__stub {
-  background: #faf8f9;
+  background: color-mix(
+    in srgb,
+    var(--color-surface) 70%,
+    var(--color-schedule-bg-grey)
+  );
 }
 
 .date-ticket--faded .date-ticket__band {
-  background: linear-gradient(115deg, #5d6b7a 0%, #7a7690 60%, #a07a8c 100%);
+  background: linear-gradient(
+    115deg,
+    var(--color-sidenav-secondary) 0%,
+    color-mix(
+        in srgb,
+        var(--color-sidenav-secondary) 55%,
+        var(--color-love-deep)
+      )
+      60%,
+    color-mix(
+        in srgb,
+        var(--color-sidenav-secondary) 30%,
+        var(--color-love-deep)
+      )
+      100%
+  );
 }
 
 .date-barcode {
@@ -156,15 +194,15 @@
   border-radius: 2px;
   background: repeating-linear-gradient(
     90deg,
-    var(--ticket-navy) 0 2px,
+    var(--ticket-ink) 0 2px,
     transparent 2px 4px,
-    var(--ticket-navy) 4px 5px,
+    var(--ticket-ink) 4px 5px,
     transparent 5px 8px,
-    var(--ticket-navy) 8px 11px,
+    var(--ticket-ink) 8px 11px,
     transparent 11px 12px,
-    var(--ticket-navy) 12px 13px,
+    var(--ticket-ink) 12px 13px,
     transparent 13px 17px,
-    var(--ticket-navy) 17px 18px,
+    var(--ticket-ink) 17px 18px,
     transparent 18px 21px
   );
 }
@@ -175,8 +213,8 @@
 
 .date-stamp {
   transform: rotate(-12deg);
-  border: 3px double rgb(190 24 93 / 0.75);
-  color: rgb(190 24 93);
+  border: 3px double color-mix(in srgb, var(--color-love-text) 75%, transparent);
+  color: var(--color-love-text);
 }
 
 .date-minimap svg .date-pin,
@@ -201,7 +239,7 @@
   background: linear-gradient(
     100deg,
     transparent,
-    rgb(255 255 255 / 0.35),
+    color-mix(in srgb, white 35%, transparent),
     transparent
   );
   transform: translateX(-120%) skewX(-18deg);
@@ -212,31 +250,54 @@
 
 .free-band {
   background:
-    radial-gradient(90% 160% at 100% 0, rgb(255 215 80 / 0.2), transparent 55%),
-    linear-gradient(115deg, #34495e 0%, #45466f 55%, #b02a68 100%);
+    radial-gradient(
+      90% 160% at 100% 0,
+      color-mix(in srgb, var(--color-main) 20%, transparent),
+      transparent 55%
+    ),
+    linear-gradient(
+      115deg,
+      var(--color-sidenav-blue) 0%,
+      color-mix(in srgb, var(--color-sidenav-blue) 55%, var(--color-love-deep))
+        55%,
+      var(--color-love-deep) 100%
+    );
 }
 
 .free-track {
-  background: linear-gradient(180deg, #f8f7f9, #f3f1f5);
-  box-shadow: inset 0 0 0 1px rgb(52 73 94 / 0.06);
+  background: linear-gradient(
+    180deg,
+    var(--color-schedule-bg-grey),
+    color-mix(
+      in srgb,
+      var(--color-schedule-bg-grey) 85%,
+      var(--color-love-wash)
+    )
+  );
+  box-shadow: inset 0 0 0 1px var(--color-schedule-border-grey);
 }
 
 .free-lunch-zone {
   background: repeating-linear-gradient(
     -45deg,
-    rgb(255 215 80 / 0.16) 0 6px,
-    rgb(255 215 80 / 0.08) 6px 12px
+    color-mix(in srgb, var(--color-main) 16%, transparent) 0 6px,
+    color-mix(in srgb, var(--color-main) 8%, transparent) 6px 12px
   );
 }
 
 .free-pill {
   transform-origin: 50% 0;
   border-radius: 10px;
-  background: linear-gradient(180deg, #e11d48 0%, #c0266b 55%, #9d2264 100%);
+  background: linear-gradient(
+    180deg,
+    var(--color-love-rose) 0%,
+    color-mix(in srgb, var(--color-love-rose) 45%, var(--color-love-deep)) 55%,
+    var(--color-love-deep) 100%
+  );
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.35),
-    0 6px 16px -6px rgb(225 29 72 / 0.65),
-    0 0 0 1px rgb(157 34 100 / 0.25);
+    inset 0 1px 0 color-mix(in srgb, white 35%, transparent),
+    0 6px 16px -6px color-mix(in srgb, var(--color-love-rose) 65%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--color-love-deep) 25%, transparent);
 }
 
 .free-pill::before {
@@ -244,7 +305,11 @@
   position: absolute;
   inset: 1px 1px 45% 1px;
   border-radius: 9px 9px 14px 14px;
-  background: linear-gradient(180deg, rgb(255 255 255 / 0.28), transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, white 28%, transparent),
+    transparent
+  );
   pointer-events: none;
 }
 
@@ -254,7 +319,8 @@
   position: absolute;
   inset: -4px;
   border-radius: 14px;
-  box-shadow: 0 0 16px 2px rgb(244 63 94 / 0.45);
+  box-shadow: 0 0 16px 2px
+    color-mix(in srgb, var(--color-love-rose) 45%, transparent);
   opacity: 0;
   pointer-events: none;
 }
@@ -265,16 +331,16 @@
 
 .free-pill--lunch {
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.35),
-    0 0 0 2px var(--color-main, #ffd750),
-    0 8px 18px -6px rgb(225 29 72 / 0.7);
+    inset 0 1px 0 color-mix(in srgb, white 35%, transparent),
+    0 0 0 2px var(--color-main),
+    0 8px 18px -6px color-mix(in srgb, var(--color-love-rose) 70%, transparent);
 }
 
 .free-pill:focus-visible {
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.35),
-    0 0 0 2px #fff,
-    0 0 0 4px var(--color-blue-pretty, #1c7ed6);
+    inset 0 1px 0 color-mix(in srgb, white 35%, transparent),
+    0 0 0 2px var(--color-surface),
+    0 0 0 4px var(--color-blue-pretty);
 }
 
 .free-pill {

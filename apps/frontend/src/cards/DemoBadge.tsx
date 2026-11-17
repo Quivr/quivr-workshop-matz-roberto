@@ -6,7 +6,7 @@ export function DemoBadge({ note = DEFAULT_NOTE }: { note?: string }) {
     <span
       title={note}
       aria-label={`Demo data: ${note}`}
-      className="inline-flex shrink-0 cursor-help items-center gap-1 rounded-full bg-pink-500/15 px-2 py-0.5 text-[10px] font-bold tracking-widest text-pink-600 uppercase ring-1 ring-pink-500/30"
+      className="bg-love/15 text-love-text ring-love/30 inline-flex shrink-0 cursor-help items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-widest uppercase ring-1"
     >
       <span aria-hidden>✦</span>
       Demo

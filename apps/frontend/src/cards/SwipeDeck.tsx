@@ -560,9 +560,9 @@ function Controls({ top, isBusy, canUndo, onUndo, onSwipe }: ControlsProps) {
           ♥
         </RoundButton>
       </div>
-      <p className="text-sidenav-secondary text-center text-[11px]">
+      <p className="text-muted text-center text-[11px]">
         {wallet.isUnlimited ? (
-          <span className="font-bold text-pink-600">
+          <span className="text-love-text font-bold">
             ♾️ Unlimited rizz activated
           </span>
         ) : (
@@ -696,7 +696,7 @@ function MatchedPanel({ match, isSuper, onBack }: MatchedPanelProps) {
   const name = match.firstName
 
   return (
-    <div className="swipe-matched space-y-1 rounded-2xl bg-white/85 p-3.5 shadow-lg ring-1 ring-pink-500/20 backdrop-blur-md">
+    <div className="swipe-matched bg-surface/85 ring-love/20 space-y-1 rounded-2xl p-3.5 shadow-lg ring-1 backdrop-blur-md">
       <div className="flex items-center gap-3">
         <div
           aria-hidden
@@ -709,7 +709,7 @@ function MatchedPanel({ match, isSuper, onBack }: MatchedPanelProps) {
           />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-title text-sidenav-blue text-2xl leading-none">
+          <p className="font-title text-heading text-2xl leading-none">
             Matched with {name} {isSuper ? '⭐' : '💞'}
           </p>
           <p className="truncate text-xs">
@@ -721,7 +721,7 @@ function MatchedPanel({ match, isSuper, onBack }: MatchedPanelProps) {
         <MatchChat match={match} />
       ) : (
         match.icebreaker && (
-          <p className="pt-1 text-xs text-[#7a1f45]">
+          <p className="text-love-ink pt-1 text-xs">
             💬 Open with: “{match.icebreaker}”
           </p>
         )
@@ -783,8 +783,8 @@ function MatchChat({ match }: { match: Match }) {
 
 function EndOfDeck({ likes, onReset }: { likes: number; onReset: () => void }) {
   return (
-    <div className="swipe-matched col-start-1 row-start-1 space-y-1 rounded-2xl bg-white/85 p-4 shadow-lg ring-1 ring-pink-500/20 backdrop-blur-md">
-      <p className="font-title text-sidenav-blue text-2xl leading-none">
+    <div className="swipe-matched bg-surface/85 ring-love/20 col-start-1 row-start-1 space-y-1 rounded-2xl p-4 shadow-lg ring-1 backdrop-blur-md">
+      <p className="font-title text-heading text-2xl leading-none">
         That’s everyone on the radar 📡
       </p>
       <p className="text-xs">

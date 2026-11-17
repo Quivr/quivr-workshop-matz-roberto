@@ -20,15 +20,20 @@
 /* Crescent moon: a transparent disc whose inset shadow is the lit part. */
 .sc-moon {
   border-radius: 9999px;
+  --sc-moon: color-mix(in srgb, var(--color-main) 60%, white);
   box-shadow:
-    inset -7px 3px 0 0 #fde68a,
-    0 0 18px 2px rgb(253 230 138 / 0.18);
+    inset -7px 3px 0 0 var(--sc-moon),
+    0 0 18px 2px color-mix(in srgb, var(--sc-moon) 18%, transparent);
   transform: rotate(-12deg);
 }
 
-/* NextSteps on the dark events card: keep its title readable. */
+/* NextSteps on the events card (a night scene in both themes): keep its title readable. */
 .sc-steps [role='group'] > span {
-  color: rgb(199 210 254 / 0.75);
+  color: color-mix(
+    in srgb,
+    color-mix(in srgb, var(--color-blue-pretty) 25%, white) 75%,
+    transparent
+  );
 }
 
 @media (prefers-reduced-motion: no-preference) {

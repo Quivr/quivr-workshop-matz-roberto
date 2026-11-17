@@ -49,7 +49,7 @@ const BURST = ['❤️', '💛', '💖', '✨', '💗', '❤️'].map((icon, i) 
 
 /** Literal class names so Tailwind can see them. */
 const GLOWS = {
-  hot: ['fill-[#ff5d8f]/15', 'fill-[#ff5d8f]/25', 'fill-[#ff5d8f]/35'],
+  hot: ['fill-love/15', 'fill-love/25', 'fill-love/35'],
   normal: ['fill-main/15', 'fill-main/25', 'fill-main/35'],
 }
 
@@ -361,8 +361,8 @@ function MatchScene({
       : `${matches.length} ${matches.length === 1 ? 'match' : 'matches'} nearby · swipe or tap a pin`
 
   return (
-    <div className="shadow-sidenav-blue/10 overflow-hidden rounded-xl bg-linear-to-br from-white via-[#fff8e6] to-[#e8f1fb] shadow-lg">
-      <div className="from-sidenav-blue flex items-baseline justify-between bg-linear-to-r to-[#4a6a8a] px-3 py-1.5 text-white">
+    <div className="shadow-sidenav-blue/10 from-surface overflow-hidden rounded-xl bg-linear-to-br via-[color-mix(in_srgb,var(--color-main)_12%,var(--color-surface))] to-[color-mix(in_srgb,var(--color-blue-pretty)_12%,var(--color-surface))] shadow-lg">
+      <div className="from-sidenav-blue to-sidenav-secondary flex items-baseline justify-between bg-linear-to-r px-3 py-1.5 text-white">
         <span className="font-title text-xl tracking-wide">Matches nearby</span>
         <span className="text-xs opacity-80">
           {data?.center ? `Leuven · ${data.center.label}` : 'Leuven'}
@@ -455,7 +455,7 @@ function MatchScene({
         </div>
 
         {isEmpty && (
-          <p className="rounded-xl bg-white/70 p-3 text-center shadow-sm">
+          <p className="bg-surface/70 rounded-xl p-3 text-center shadow-sm">
             🔭 Nobody on the radar right now. Try a different area or loosen
             your preferences, then ask again.
           </p>
@@ -468,7 +468,7 @@ function MatchScene({
             />
             <div
               aria-hidden
-              className="motion-safe:animate-aurora absolute -right-3 -bottom-3 -z-10 size-40 rounded-full bg-[#ff9aa9]/30 blur-2xl"
+              className="motion-safe:animate-aurora bg-love/30 absolute -right-3 -bottom-3 -z-10 size-40 rounded-full blur-2xl"
             />
             {isScanning ? (
               <SwipeDeckSkeleton />
@@ -480,9 +480,7 @@ function MatchScene({
             )}
           </div>
         )}
-        {data && (
-          <p className="text-sidenav-secondary text-[11px]">🧪 {data.note}</p>
-        )}
+        {data && <p className="text-muted text-[11px]">🧪 {data.note}</p>}
       </div>
     </div>
   )

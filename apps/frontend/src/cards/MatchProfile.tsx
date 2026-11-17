@@ -120,7 +120,7 @@ export function Avatar({
   return (
     <span
       aria-hidden
-      className={`font-title text-sidenav-blue inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full leading-none shadow-md ring-white ${hasPhoto ? '' : 'pt-0.5'} ${AVATAR_SIZES[size]} ${className}`}
+      className={`font-title text-sidenav-blue ring-surface inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full leading-none shadow-md ${hasPhoto ? '' : 'pt-0.5'} ${AVATAR_SIZES[size]} ${className}`}
       style={{ background: gradientOf(name) }}
     >
       {hasPhoto ? (
@@ -149,7 +149,10 @@ function ScoreRing({ score }: { score: number }) {
       className="score-ring motion-safe:animate-count-up size-14 shrink-0"
       style={vars({
         '--score': value,
-        '--ring': value >= HOT_SCORE ? '#ff5d8f' : '#1abc9c',
+        '--ring':
+          value >= HOT_SCORE
+            ? 'var(--color-love)'
+            : 'var(--color-green-status)',
       })}
     />
   )
@@ -162,7 +165,7 @@ function MoreDetails({ match }: { match: Match }) {
   return (
     <div className="motion-safe:animate-fade-up space-y-2.5 pt-1">
       {match.lookingFor && (
-        <p className="from-main/30 text-sidenav-blue rounded-lg bg-linear-to-r to-[#ff9aa9]/25 px-3 py-1.5 text-xs">
+        <p className="from-main/30 text-heading to-love/25 rounded-lg bg-linear-to-r px-3 py-1.5 text-xs">
           💞 Looking for <b>{match.lookingFor}</b>
         </p>
       )}
@@ -172,7 +175,7 @@ function MoreDetails({ match }: { match: Match }) {
           {interests.map(interest => (
             <li
               key={interest}
-              className="border-schedule-border-grey rounded-full border bg-white/80 px-2 py-0.5 text-[11px]"
+              className="border-schedule-border-grey bg-surface/80 rounded-full border px-2 py-0.5 text-[11px]"
             >
               #{interest}
             </li>
@@ -185,7 +188,7 @@ function MoreDetails({ match }: { match: Match }) {
             key={key}
             className="contents"
           >
-            <dt className="text-sidenav-secondary whitespace-nowrap">
+            <dt className="text-muted whitespace-nowrap">
               {icon} {label}
             </dt>
             <dd className="font-bold">{match.funFacts?.[key]}</dd>
@@ -216,8 +219,8 @@ function MoreDetails({ match }: { match: Match }) {
 function LockedSticker({ onUnlock }: { onUnlock: () => void }) {
   return (
     <div className="absolute inset-0 z-[3] grid place-items-center p-4">
-      <div className="swipe-sticker flex flex-col items-center gap-2 rounded-2xl bg-[#fff6c7] px-4 py-3 text-center shadow-xl ring-2 ring-[#ffd750]">
-        <p className="font-title text-sidenav-blue text-2xl leading-none tracking-wide">
+      <div className="swipe-sticker ring-main flex flex-col items-center gap-2 rounded-2xl bg-[color-mix(in_srgb,var(--color-main)_20%,var(--color-surface))] px-4 py-3 text-center shadow-xl ring-2">
+        <p className="font-title text-heading text-2xl leading-none tracking-wide">
           🕵️ WHO IS THIS??
         </p>
         <p className="text-[11px]">
@@ -226,7 +229,7 @@ function LockedSticker({ onUnlock }: { onUnlock: () => void }) {
         <button
           type="button"
           onClick={onUnlock}
-          className="swipe-wobble rounded-full bg-linear-to-r from-pink-500 to-[#b02a68] px-3 py-1.5 text-xs font-bold text-white shadow-md transition hover:shadow-lg focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 focus-visible:outline-none"
+          className="swipe-wobble from-love-hot to-love-deep rounded-full bg-linear-to-r px-3 py-1.5 text-xs font-bold text-white shadow-md transition hover:shadow-lg focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 focus-visible:outline-none"
         >
           🕶️ Unblur with X-Ray Goggles
         </button>
@@ -277,7 +280,7 @@ export function MatchProfile({
           aria-expanded={isOpen}
           aria-controls={detailsId}
           onClick={() => setIsOpen(value => !value)}
-          className="text-sidenav-secondary rounded-full px-2 py-0.5 text-xs font-bold transition hover:bg-pink-50 hover:text-pink-600 focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:outline-none"
+          className="text-muted hover:bg-love-wash hover:text-love-text rounded-full px-2 py-0.5 text-xs font-bold transition focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:outline-none"
         >
           {isOpen ? 'Less ▴' : 'More ▾'}
         </button>
@@ -306,7 +309,7 @@ function MatchFace({ match, isLocked, kind, reasons }: MatchFaceProps) {
           photoUrl={isLocked ? undefined : match.photoUrl}
         />
         <div className="min-w-0 flex-1">
-          <h3 className="font-title text-sidenav-blue text-[1.7rem] leading-none">
+          <h3 className="font-title text-heading text-[1.7rem] leading-none">
             {isLocked ? '???' : match.firstName}, {match.age}
           </h3>
           <p className="truncate text-xs">
@@ -321,7 +324,7 @@ function MatchFace({ match, isLocked, kind, reasons }: MatchFaceProps) {
           </p>
         </div>
         {isLocked ? (
-          <div className="font-title text-sidenav-blue grid size-14 shrink-0 place-items-center rounded-full text-2xl ring-[6px] ring-[#34495e]/10 ring-inset">
+          <div className="font-title text-heading ring-heading/10 grid size-14 shrink-0 place-items-center rounded-full text-2xl ring-[6px] ring-inset">
             ??%
           </div>
         ) : (
@@ -334,7 +337,7 @@ function MatchFace({ match, isLocked, kind, reasons }: MatchFaceProps) {
           {reasons.map((reason, i) => (
             <li
               key={reason}
-              className={`${chip} bg-main/40 text-sidenav-blue`}
+              className={`${chip} bg-main/40 text-heading`}
               style={chipDelay(i)}
             >
               ✨ {reason}
@@ -343,12 +346,12 @@ function MatchFace({ match, isLocked, kind, reasons }: MatchFaceProps) {
         </ul>
       )}
 
-      <p className="text-sidenav-secondary text-xs">
+      <p className="text-muted text-xs">
         {kind.icon} {match.spot.name} ·{' '}
         {AREA_NAMES[match.spot.area] ?? match.spot.area}
       </p>
 
-      <p className="relative ml-auto w-fit max-w-[88%] rounded-2xl rounded-br-sm bg-linear-to-br from-[#ffe1ea] to-[#ffd0dd] px-3 py-2 text-xs text-[#7a1f45] shadow-sm">
+      <p className="from-love-wash to-love-wash-2 text-love-ink relative ml-auto w-fit max-w-[88%] rounded-2xl rounded-br-sm bg-linear-to-br px-3 py-2 text-xs shadow-sm">
         <span className="sr-only">Suggested opening line: </span>“
         {match.icebreaker}”
       </p>

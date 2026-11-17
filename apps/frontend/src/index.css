@@ -322,6 +322,54 @@
   --color-on-diet: #0f2a18;
 }
 
+/* ===== Dating demo tokens (love-*) =====
+ * Used by the dating demo CSS (cards/*.css, components/*.css) and its cards.
+ * `static` keeps them in :root even when only plain CSS files reference them.
+ * Saturated fills keep white text on top in both themes; washes, lines and
+ * ink flip like the rest of the surfaces. */
+@theme static {
+  --color-love: #ec4899; /* focus rings, borders, accents */
+  --color-love-text: #db2777; /* pink text on a surface (>= 4.6:1) */
+  --color-love-hot: #d6006f; /* saturated fill, white text */
+  --color-love-rose: #e11d48; /* gradient start, glows */
+  --color-love-deep: #b02a68; /* gradient end */
+  --color-love-violet: #7c3aed; /* paywall and invite accents */
+  --color-love-wash: #fff1f6; /* pale pink panel */
+  --color-love-wash-2: #ffe4ef; /* pale pink panel, hover and blush */
+  --color-love-line: #fecdd3; /* pink border */
+  --color-love-ink: #4a1730; /* text on a pink wash */
+  --color-love-siren: #b91c1c; /* red text on the yellow alarm panel */
+  --color-love-alarm: #7f1d1d; /* coin alarm scrim, red end */
+  --color-love-night: #1e0a14; /* coin alarm scrim, dark end */
+  --color-love-ok: #16a34a; /* "free" button on the coin alarm, white text */
+  --color-coin: #f5b700; /* QuivrCoin face */
+  --color-coin-edge: #8a5a00; /* QuivrCoin rim */
+  --color-coin-ink: #7a4b00; /* QuivrCoin glyph */
+  --color-shade: #34495e; /* base colour of drop shadows */
+}
+
+.dark {
+  --color-love: #f472b6;
+  --color-love-text: #f472b6;
+  --color-love-hot: #c2005f;
+  --color-love-rose: #d4183f;
+  --color-love-deep: #98235a;
+  --color-love-violet: #6d28d9;
+  --color-love-wash: #3a2331;
+  --color-love-wash-2: #4a2a3c;
+  --color-love-line: #6b3447;
+  --color-love-ink: #ffd6e5;
+  --color-love-siren: #a31717;
+  --color-love-alarm: #6b1717;
+  --color-love-night: #12060c;
+  --color-love-ok: #15803d;
+  --color-coin: #f5b700;
+  --color-coin-edge: #b07400;
+  --color-coin-ink: #7a4b00;
+  --color-shade: #000000;
+}
+/* ===== end dating demo tokens ===== */
+
 body {
   @apply bg-schedule-bg-grey text-main-text font-sans;
 }
