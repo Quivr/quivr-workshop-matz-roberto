@@ -1,0 +1,245 @@
+/*
+ * InviteCard + EventsCard. Classes are prefixed `sc-`.
+ * Without motion (or with reduced motion) everything shows its final state:
+ * the typing indicator and hearts stay hidden, bubbles and segments are visible.
+ */
+
+.sc-typing,
+.sc-heart {
+  opacity: 0;
+}
+
+.sc-star {
+  opacity: var(--sc-o, 0.6);
+}
+
+.sc-seg {
+  transform-origin: left center;
+}
+
+/* Crescent moon: a transparent disc whose inset shadow is the lit part. */
+.sc-moon {
+  border-radius: 9999px;
+  box-shadow:
+    inset -7px 3px 0 0 #fde68a,
+    0 0 18px 2px rgb(253 230 138 / 0.18);
+  transform: rotate(-12deg);
+}
+
+/* NextSteps on the dark events card: keep its title readable. */
+.sc-steps [role='group'] > span {
+  color: rgb(199 210 254 / 0.75);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Invite: 1. message pops in */
+  .sc-pop {
+    transform-origin: bottom right;
+    animation: sc-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both;
+  }
+
+  /* 2. "Delivered" */
+  .sc-delivered {
+    animation: sc-fade-up 0.4s ease-out 0.75s both;
+  }
+
+  /* 3. typing indicator, visible from ~1.0 s to ~2.3 s */
+  .sc-typing {
+    transform-origin: bottom left;
+    animation: sc-typing 1.35s ease-in-out 1s both;
+  }
+  .sc-typing-dot {
+    animation: sc-bounce 0.9s ease-in-out infinite;
+  }
+
+  /* 4. reply slides in */
+  .sc-reply {
+    transform-origin: bottom left;
+    animation: sc-slide-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) 2.3s both;
+  }
+
+  /* 5. hearts (delay set inline) */
+  .sc-heart {
+    animation: sc-float 1.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* 6. next steps, once the reply is in */
+  .sc-steps-late {
+    animation: sc-fade-up 0.45s ease-out 2.75s both;
+  }
+
+  /* Draft (error) state */
+  .sc-draft {
+    animation: sc-fade-up 0.45s ease-out 0.1s both;
+  }
+  .sc-banner {
+    animation: sc-fade-up 0.45s ease-out 0.35s both;
+  }
+  .sc-confirm {
+    animation: sc-fade-up 0.45s ease-out 0.55s both;
+  }
+  .sc-hourglass {
+    display: inline-block;
+    animation: sc-tilt 2.4s ease-in-out infinite;
+  }
+
+  /* Events: stars, moon, rows (delays set inline) */
+  .sc-star {
+    animation: sc-twinkle 3.2s ease-in-out infinite both;
+  }
+  .sc-moon-halo {
+    animation: sc-glow 5s ease-in-out infinite;
+  }
+  .sc-rise {
+    animation: sc-fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .sc-ring {
+    animation: sc-ring 2.2s ease-out infinite;
+  }
+  .sc-seg {
+    animation: sc-grow 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@keyframes sc-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.8);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-1px) scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes sc-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes sc-typing {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.9);
+  }
+  14%,
+  84% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+@keyframes sc-bounce {
+  0%,
+  60%,
+  100% {
+    opacity: 0.45;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes sc-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-14px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes sc-float {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.4);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(calc(var(--sc-dx, 0px) * 0.2), -10px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--sc-dx, 0px), -78px) scale(0.8)
+      rotate(var(--sc-rot, 0deg));
+  }
+}
+
+@keyframes sc-tilt {
+  0%,
+  40% {
+    transform: rotate(0deg);
+  }
+  50%,
+  90% {
+    transform: rotate(180deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes sc-twinkle {
+  0%,
+  100% {
+    opacity: calc(var(--sc-o, 0.6) * 0.3);
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: var(--sc-o, 0.6);
+    transform: scale(1);
+  }
+}
+
+@keyframes sc-glow {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes sc-ring {
+  0% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  80%,
+  100% {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+
+@keyframes sc-grow {
+  from {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

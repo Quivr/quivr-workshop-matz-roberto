@@ -1,0 +1,187 @@
+/* Empty state polish (App.tsx). Transform and opacity only. */
+
+.empty-state__title {
+  position: relative;
+  isolation: isolate;
+  display: inline-block;
+  padding: 0.25rem 1.5rem;
+}
+
+/* Soft glow drifting behind the title. */
+.empty-state__title::before {
+  content: '';
+  position: absolute;
+  inset: 10% -10%;
+  z-index: -1;
+  border-radius: 9999px;
+  background:
+    radial-gradient(
+      closest-side at 30% 50%,
+      rgb(255 215 80 / 0.55),
+      transparent
+    ),
+    radial-gradient(
+      closest-side at 70% 50%,
+      rgb(251 113 133 / 0.3),
+      transparent
+    );
+  filter: blur(18px);
+  animation: empty-state-glow 7s ease-in-out infinite alternate;
+}
+
+/* Short underline with a light sweeping across it. */
+.empty-state__underline {
+  position: relative;
+  display: block;
+  width: 4rem;
+  height: 3px;
+  margin: 0.15rem auto 0.9rem;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: var(--color-main);
+}
+
+.empty-state__underline::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(255 255 255 / 0.85),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: empty-state-sweep 3.2s ease-in-out 0.6s infinite;
+}
+
+.empty-state__example {
+  position: relative;
+  transition: transform 0.2s ease-out;
+  animation: empty-state-fade-up 0.45s ease-out backwards;
+  animation-delay: calc(var(--empty-state-index, 0) * 70ms + 120ms);
+}
+
+/* Bigger shadow on its own layer so hover only animates opacity. */
+.empty-state__example::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 8px 20px -10px rgb(52 73 94 / 0.35);
+  opacity: 0;
+  transition: opacity 0.2s ease-out;
+  pointer-events: none;
+}
+
+.empty-state__example:hover,
+.empty-state__example:focus-visible {
+  transform: translateY(-2px);
+}
+
+.empty-state__example:hover::after,
+.empty-state__example:focus-visible::after {
+  opacity: 1;
+}
+
+.empty-state__example--love {
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(#fff, #fff) padding-box,
+    linear-gradient(120deg, #fb7185, #f472b6, #e11d48) border-box;
+  color: #9f1239;
+}
+
+.empty-state__example--love:hover {
+  background:
+    linear-gradient(#fff5f8, #fff5f8) padding-box,
+    linear-gradient(120deg, #fb7185, #f472b6, #e11d48) border-box;
+}
+
+/* Rose glow that breathes behind the button. */
+.empty-state__example--love::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  box-shadow: 0 0 18px 2px rgb(244 114 182 / 0.45);
+  opacity: 0.35;
+  pointer-events: none;
+  animation: empty-state-breathe 2.4s ease-in-out infinite alternate;
+}
+
+.empty-state__example--love::after {
+  box-shadow: 0 10px 24px -10px rgb(225 29 72 / 0.5);
+}
+
+.empty-state__heart {
+  display: inline-block;
+  animation: empty-state-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes empty-state-glow {
+  from {
+    transform: translateX(-8%) scale(0.95);
+    opacity: 0.7;
+  }
+  to {
+    transform: translateX(8%) scale(1.05);
+    opacity: 1;
+  }
+}
+
+@keyframes empty-state-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  60%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes empty-state-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes empty-state-breathe {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes empty-state-pulse {
+  0%,
+  60%,
+  100% {
+    transform: scale(1);
+  }
+  20% {
+    transform: scale(1.22);
+  }
+  40% {
+    transform: scale(0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .empty-state__title::before,
+  .empty-state__underline::after,
+  .empty-state__example,
+  .empty-state__example--love::before,
+  .empty-state__heart {
+    animation: none;
+  }
+
+  .empty-state__example {
+    transition: none;
+  }
+
+  .empty-state__example:hover,
+  .empty-state__example:focus-visible {
+    transform: none;
+  }
+}

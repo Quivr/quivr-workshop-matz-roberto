@@ -1,4 +1,4 @@
-import { cards } from './registry'
+import { cards, errorCards, liveCards } from './registry'
 import { ToolCallCard } from './ToolCallCard'
 import type { CardProps } from './types'
 
@@ -23,6 +23,9 @@ type Props = {
   argsJson: string
   resultContent?: string
   durationMs?: number
+  onAction?: (text: string) => void
+  onCompose?: (text: string) => void
+  actionsDisabled?: boolean
 }
 
 /** Picks the registered card for a tool call, or the generic fallback. */
@@ -31,6 +34,9 @@ export function ToolCard({
   argsJson,
   resultContent,
   durationMs,
+  onAction,
+  onCompose,
+  actionsDisabled,
 }: Props) {
   const props: CardProps = {
     toolName,
@@ -38,16 +44,17 @@ export function ToolCard({
     ...parse(resultContent),
     isPending: resultContent === undefined,
     durationMs,
+    onAction,
+    onCompose,
+    actionsDisabled,
   }
   const Custom = cards[toolName]
 
   return (
-    <div className="motion-safe:animate-fade-up space-y-1">
-      {Custom && !props.isPending && !props.error && (
-        <div className="motion-safe:animate-fade-up">
-          <Custom {...props} />
-        </div>
-      )}
+    <div className="motion-safe:animate-lift space-y-1">
+      {Custom &&
+        (!props.error || errorCards.has(toolName)) &&
+        (!props.isPending || liveCards.has(toolName)) && <Custom {...props} />}
       <ToolCallCard {...props} />
     </div>
   )

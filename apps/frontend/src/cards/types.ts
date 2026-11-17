@@ -6,4 +6,7 @@ export type CardProps = {
   error?: string
   isPending: boolean
   durationMs?: number
+  onAction?: (text: string) => void
+  onCompose?: (text: string) => void
+  actionsDisabled?: boolean
 }

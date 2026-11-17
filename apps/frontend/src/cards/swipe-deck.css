@@ -1,0 +1,380 @@
+/* SwipeDeck (find_matches). Motion animates transform and opacity only. */
+
+/* ───────────── Stack ───────────── */
+
+/* Cards share one grid cell; the tallest sets the height. */
+.swipe-stack {
+  display: grid;
+  padding-bottom: 26px;
+  border-radius: 1rem;
+  outline: none;
+}
+
+.swipe-stack:focus-visible {
+  box-shadow:
+    0 0 0 3px #fff,
+    0 0 0 5px rgb(236 72 153 / 0.8);
+}
+
+/* --depth: 0 is the top card. --progress (0..1, set while dragging) pulls the
+   cards behind forward so the next one springs into place. */
+.swipe-card {
+  --lift: max(0, var(--depth, 0) - var(--progress, 0));
+  grid-area: 1 / 1;
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+  background:
+    radial-gradient(
+      120% 60% at 100% 0,
+      rgb(255 154 169 / 0.22),
+      transparent 60%
+    ),
+    radial-gradient(90% 50% at 0 100%, rgb(255 215 80 / 0.18), transparent 60%),
+    #fff;
+  box-shadow:
+    0 1px 2px rgb(52 73 94 / 0.08),
+    0 12px 28px -10px rgb(52 73 94 / 0.28),
+    0 0 0 1px rgb(236 72 153 / 0.08);
+  transform: translate3d(0, calc(var(--lift) * 13px), 0)
+    scale(calc(1 - var(--lift) * 0.05));
+  transform-origin: 50% 100%;
+  transition: transform 0.45s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.swipe-card--top {
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  will-change: transform;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.swipe-card--top:active {
+  cursor: grabbing;
+}
+
+/* ───────────── Stamps ───────────── */
+
+.swipe-stamp {
+  position: absolute;
+  z-index: 2;
+  padding: 0.1rem 0.55rem 0;
+  border: 3px solid currentColor;
+  border-radius: 0.5rem;
+  background: rgb(255 255 255 / 0.75);
+  font-family: var(--font-title);
+  font-size: 1.9rem;
+  line-height: 1.1;
+  letter-spacing: 0.06em;
+  pointer-events: none;
+  transition: opacity 0.15s ease-out;
+}
+
+.swipe-stamp--like {
+  top: 1rem;
+  left: 1rem;
+  color: #10b981;
+  opacity: var(--like, 0);
+  transform: rotate(-14deg) scale(calc(0.85 + var(--like, 0) * 0.15));
+}
+
+.swipe-stamp--nope {
+  top: 1rem;
+  right: 1rem;
+  color: #ef4444;
+  opacity: var(--nope, 0);
+  transform: rotate(14deg) scale(calc(0.85 + var(--nope, 0) * 0.15));
+}
+
+.swipe-stamp--super {
+  bottom: 2.5rem;
+  left: 50%;
+  color: #1c7ed6;
+  opacity: var(--super, 0);
+  transform: translateX(-50%) rotate(-8deg);
+}
+
+/* ───────────── Locked profiles (fake paywall) ───────────── */
+
+/* Unlocking transitions blur → 0 with a small springy pop. */
+.swipe-reveal {
+  transition:
+    filter 0.8s ease-out,
+    transform 0.6s cubic-bezier(0.34, 1.9, 0.64, 1),
+    opacity 0.6s ease-out;
+}
+
+.swipe-reveal.is-locked {
+  filter: blur(12px) saturate(0.7);
+  opacity: 0.85;
+  transform: scale(0.96);
+  user-select: none;
+  pointer-events: none;
+}
+
+.swipe-sticker {
+  transform: rotate(-4deg);
+}
+
+.swipe-count--empty {
+  display: inline-block;
+  font-weight: 700;
+  color: #db2777;
+}
+
+/* ───────────── Controls ───────────── */
+
+.swipe-btn {
+  display: inline-grid;
+  place-items: center;
+  border-radius: 9999px;
+  background: #fff;
+  box-shadow:
+    0 6px 16px -6px rgb(52 73 94 / 0.35),
+    0 0 0 1px rgb(52 73 94 / 0.06);
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.2s;
+}
+
+.swipe-btn:hover:not(:disabled) {
+  transform: scale(1.08);
+  box-shadow:
+    0 10px 22px -8px rgb(236 72 153 / 0.45),
+    0 0 0 1px rgb(236 72 153 / 0.15);
+}
+
+.swipe-btn:active:not(:disabled) {
+  transform: scale(0.92);
+}
+
+.swipe-btn:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px #fff,
+    0 0 0 5px rgb(236 72 153 / 0.8);
+}
+
+.swipe-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+/* ───────────── It's a match ───────────── */
+
+.swipe-celebrate {
+  background:
+    radial-gradient(80% 60% at 50% 0, rgb(255 215 80 / 0.35), transparent 70%),
+    linear-gradient(150deg, rgb(255 93 143 / 0.94), rgb(176 42 104 / 0.95));
+  box-shadow: 0 18px 40px -14px rgb(176 42 104 / 0.6);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.swipe-celebrate--super {
+  background:
+    radial-gradient(80% 60% at 50% 0, rgb(255 215 80 / 0.4), transparent 70%),
+    linear-gradient(150deg, rgb(28 126 214 / 0.94), rgb(176 42 104 / 0.95));
+}
+
+/* ───────────── Skeleton ───────────── */
+
+.swipe-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgb(255 255 255 / 0.75) 50%,
+    transparent 80%
+  );
+  transform: translateX(-100%);
+}
+
+.swipe-bone {
+  background: rgb(52 73 94 / 0.09);
+}
+
+/* ───────────── Motion ───────────── */
+
+@media (prefers-reduced-motion: no-preference) {
+  .swipe-card {
+    animation: swipe-fade 0.4s ease-out backwards;
+  }
+
+  .swipe-celebrate {
+    animation: swipe-fade 0.25s ease-out both;
+  }
+
+  .swipe-celebrate__title {
+    animation: swipe-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+  }
+
+  .swipe-celebrate__you {
+    animation: swipe-from-left 0.55s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+  }
+
+  .swipe-celebrate__them {
+    animation: swipe-from-right 0.55s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+  }
+
+  .swipe-celebrate__heart {
+    animation:
+      swipe-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.35s both,
+      swipe-beat 0.9s ease-in-out 0.85s infinite;
+  }
+
+  .swipe-matched {
+    animation: swipe-collapse 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .swipe-like-pop {
+    animation: swipe-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  .swipe-skeleton::after {
+    animation: swipe-shimmer 1.4s ease-in-out infinite;
+  }
+
+  .swipe-sticker {
+    animation: swipe-slap 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both;
+  }
+
+  .swipe-wobble {
+    animation: swipe-wobble 2.4s ease-in-out 0.8s infinite;
+  }
+
+  .swipe-wobble:hover,
+  .swipe-wobble:focus-visible {
+    animation-play-state: paused;
+  }
+
+  .swipe-count--empty {
+    animation: swipe-shake 2.6s ease-in-out infinite;
+  }
+}
+
+/* No fly-away, tilt or spring: everything is instant. */
+@media (prefers-reduced-motion: reduce) {
+  .swipe-card,
+  .swipe-stamp,
+  .swipe-btn,
+  .swipe-reveal {
+    transition: none !important;
+  }
+}
+
+@keyframes swipe-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes swipe-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes swipe-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-70px) rotate(-12deg);
+  }
+}
+
+@keyframes swipe-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(70px) rotate(12deg);
+  }
+}
+
+@keyframes swipe-beat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.25);
+  }
+  45% {
+    transform: scale(1);
+  }
+  65% {
+    transform: scale(1.15);
+  }
+}
+
+@keyframes swipe-collapse {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(-6px);
+  }
+}
+
+@keyframes swipe-shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes swipe-slap {
+  0% {
+    opacity: 0;
+    transform: rotate(-18deg) scale(1.6);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(-4deg) scale(1);
+  }
+}
+
+@keyframes swipe-wobble {
+  0%,
+  60%,
+  100% {
+    transform: rotate(0) scale(1);
+  }
+  68% {
+    transform: rotate(-5deg) scale(1.06);
+  }
+  76% {
+    transform: rotate(4deg) scale(1.06);
+  }
+  84% {
+    transform: rotate(-3deg) scale(1.03);
+  }
+  92% {
+    transform: rotate(2deg) scale(1);
+  }
+}
+
+/* A quick shiver, then a pause. */
+@keyframes swipe-shake {
+  0%,
+  24%,
+  100% {
+    transform: none;
+  }
+  4%,
+  14% {
+    transform: translateX(-2px) rotate(-2deg);
+  }
+  9%,
+  19% {
+    transform: translateX(2px) rotate(2deg);
+  }
+}

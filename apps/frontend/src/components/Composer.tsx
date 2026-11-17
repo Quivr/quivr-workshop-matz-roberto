@@ -3,10 +3,11 @@ import { useState, type FormEvent } from 'react'
 type Props = {
   isDisabled: boolean
   onSend: (text: string) => void
+  prefill?: string
 }
 
-export function Composer({ isDisabled, onSend }: Props) {
-  const [text, setText] = useState('')
+export function Composer({ isDisabled, onSend, prefill }: Props) {
+  const [text, setText] = useState(prefill ?? '')
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault()

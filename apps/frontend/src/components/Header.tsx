@@ -1,4 +1,5 @@
 import { ThemeToggle } from '../theme/ThemeToggle'
+import { WalletPill } from './WalletPill'
 
 type Props = {
   models: string[]
@@ -40,6 +41,7 @@ export function Header({
       <h1 className="font-title text-main mr-auto text-3xl tracking-wide">
         Ask Quivr
       </h1>
+      <WalletPill />
       <select
         value={model}
         onChange={event => onModelChange(event.target.value)}

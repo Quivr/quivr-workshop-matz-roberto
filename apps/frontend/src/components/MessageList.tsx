@@ -7,12 +7,22 @@ type Props = {
   messages: Message[]
   durations: Record<string, number>
   isRunning: boolean
+  onAction?: (text: string) => void
+  onCompose?: (text: string) => void
+  actionsDisabled?: boolean
 }
 
 const textOf = (content: unknown) =>
   typeof content === 'string' ? content : ''
 
-export function MessageList({ messages, durations, isRunning }: Props) {
+export function MessageList({
+  messages,
+  durations,
+  isRunning,
+  onAction,
+  onCompose,
+  actionsDisabled,
+}: Props) {
   const toolResults = new Map(
     messages.flatMap(message =>
       message.role === 'tool'
@@ -48,6 +58,9 @@ export function MessageList({ messages, durations, isRunning }: Props) {
                 argsJson={call.function.arguments}
                 resultContent={toolResults.get(call.id)}
                 durationMs={durations[call.id]}
+                onAction={onAction}
+                onCompose={onCompose}
+                actionsDisabled={actionsDisabled}
               />
             ))}
             {message.content && (

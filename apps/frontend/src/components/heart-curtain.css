@@ -1,0 +1,138 @@
+/* Full-screen curtain of hearts (HeartCurtain.tsx). Transform and opacity only. */
+
+.heart-curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.heart-curtain__veil {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse 70% 55% at 50% 40%,
+      rgb(255 182 206 / 0.5),
+      rgb(255 214 228 / 0.28) 45%,
+      transparent 75%
+    ),
+    rgb(255 240 245 / 0.25);
+  opacity: 0;
+  animation: heart-curtain-veil 3.4s ease-in-out forwards;
+}
+
+.heart-curtain__fall {
+  position: absolute;
+  top: -64px;
+  opacity: 0;
+  will-change: transform, opacity;
+  animation-name: heart-curtain-fall;
+  animation-timing-function: cubic-bezier(0.42, 0, 0.62, 1);
+  animation-fill-mode: both;
+}
+
+.heart-curtain__sway {
+  display: block;
+  animation-name: heart-curtain-sway;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+.heart-curtain__emoji {
+  display: block;
+  line-height: 1;
+}
+
+.heart-curtain__svg {
+  display: block;
+  filter: drop-shadow(0 2px 3px rgb(225 29 72 / 0.25));
+}
+
+.heart-curtain__pill {
+  position: absolute;
+  top: 38%;
+  left: 50%;
+  translate: -50% -50%;
+  padding: 0.55rem 1.1rem;
+  border-radius: 9999px;
+  background: rgb(255 255 255 / 0.92);
+  color: #be123c;
+  font-weight: bold;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  box-shadow:
+    0 0 0 1px rgb(251 113 133 / 0.35),
+    0 10px 30px -8px rgb(225 29 72 / 0.45);
+  opacity: 0;
+  animation: heart-curtain-pill 2.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.25s
+    forwards;
+}
+
+@keyframes heart-curtain-veil {
+  0% {
+    opacity: 0;
+  }
+  22%,
+  62% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes heart-curtain-fall {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  8% {
+    opacity: 1;
+  }
+  72% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(calc(100vh + 64px));
+  }
+}
+
+@keyframes heart-curtain-sway {
+  from {
+    transform: translateX(calc(var(--hc-sway) * -1))
+      rotate(calc(var(--hc-rotation) * -1));
+  }
+  to {
+    transform: translateX(var(--hc-sway)) rotate(var(--hc-rotation));
+  }
+}
+
+@keyframes heart-curtain-pill {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  14% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  78% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heart-curtain__fall,
+  .heart-curtain__pill {
+    display: none;
+  }
+}

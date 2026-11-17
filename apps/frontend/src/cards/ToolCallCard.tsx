@@ -3,6 +3,21 @@ import type { CardProps } from './types'
 const pretty = (value: unknown) =>
   typeof value === 'string' ? value : JSON.stringify(value, null, 2)
 
+const TypingDots = () => (
+  <span
+    aria-hidden
+    className="ml-1 inline-flex gap-0.5 align-middle"
+  >
+    {[0, 1, 2].map(i => (
+      <span
+        key={i}
+        className="bg-sidenav-secondary motion-safe:animate-dot size-1 rounded-full"
+        style={{ animationDelay: `${i * 150}ms` }}
+      />
+    ))}
+  </span>
+)
+
 /** Fallback card for any tool: name, args, result and duration. */
 export function ToolCallCard({
   toolName,
@@ -26,12 +41,7 @@ export function ToolCallCard({
           {status}
           {duration}
         </span>
-        {isPending && (
-          <span
-            aria-hidden
-            className="border-muted ml-2 inline-block size-2.5 rounded-full border-2 border-t-transparent align-middle motion-safe:animate-spin"
-          />
-        )}
+        {isPending && <TypingDots />}
       </summary>
       <div className="border-schedule-border-grey motion-safe:animate-fade-down space-y-2 border-t px-3 py-2">
         <div>
