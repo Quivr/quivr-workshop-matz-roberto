@@ -157,3 +157,52 @@ describe('get_library_occupancy', () => {
     ])
   })
 })
+
+describe('get_menu favourites', () => {
+  it('keeps the favorite flag of every dish', async () => {
+    const quivr = fakeQuivr({
+      getMenu: async () =>
+        ({
+          restaurants: [
+            {
+              id: '3',
+              name: 'Alma 2',
+              openingHours: [],
+              dishes: [
+                {
+                  name: 'Spaghetti meatballs',
+                  mealCategory: 'WARM_BUFFET',
+                  prices: [6.35],
+                  vegetarian: false,
+                  vegan: false,
+                  allergens: [],
+                  favorite: true,
+                },
+                {
+                  name: 'Broccoli soup (S)',
+                  mealCategory: 'SOUP',
+                  prices: [1.1],
+                  vegetarian: true,
+                  vegan: false,
+                  allergens: [],
+                  favorite: false,
+                },
+              ],
+            },
+          ],
+        }) as never,
+    })
+
+    const result = await getMenu.run(
+      { restaurantId: '3', date: '2026-11-17' },
+      quivr
+    )
+
+    expect(result).toMatchObject({
+      dishes: [
+        { name: 'Spaghetti meatballs', favorite: true },
+        { name: 'Broccoli soup (S)', favorite: false },
+      ],
+    })
+  })
+})

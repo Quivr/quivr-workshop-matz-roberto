@@ -43,7 +43,7 @@ export type MenuQueryVariables = Exact<{
 }>;
 
 
-export type MenuQuery = { restaurants: Array<{ id: string, name: string, openingHours: Array<{ day: string, data: Array<{ openFrom: string, openUntil: string }> }>, dishes: Array<{ name: string, mealCategory: MealCategoryEnum | null, prices: Array<number>, vegetarian: boolean, vegan: boolean, allergens: Array<AllergenKindEnum> }> }> };
+export type MenuQuery = { restaurants: Array<{ id: string, name: string, openingHours: Array<{ day: string, data: Array<{ openFrom: string, openUntil: string }> }>, dishes: Array<{ name: string, mealCategory: MealCategoryEnum | null, prices: Array<number>, vegetarian: boolean, vegan: boolean, allergens: Array<AllergenKindEnum>, favorite: boolean }> }> };
 
 export type MyScheduleQueryVariables = Exact<{
   timeRange: TimeRangeInput;
