@@ -25,15 +25,16 @@ const isSameClass = (mine: Item, theirs: Item) => {
   return a === null || b === null || a === b
 }
 
-const displayName = (friend: { firstName: string; lastName: string }) => {
-  const initial = friend.lastName.trim().charAt(0)
-  return initial ? `${friend.firstName} ${initial}.` : friend.firstName
-}
+const fullName = (friend: { firstName: string; lastName?: string | null }) =>
+  [friend.firstName, friend.lastName]
+    .map(part => part?.trim())
+    .filter(Boolean)
+    .join(' ')
 
 export const getClassmates = defineTool({
   name: 'get_classmates',
   description:
-    "Find which of the student's friends have something scheduled at the same time as the student's own classes and events on one day. Quivr has no class roster: this only covers friends who share their schedule, so never present the result as a full list of who is in a class. Each of the student's items is returned with the overlapping friends; `isSameClass` is true when the title (and the location, when both are known) matches, so it is likely the same class. `friendsChecked` is how many friends have at least one visible item that day: 0 means no friend shares anything that day, so say you don't know who is there.",
+    "Find which of the student's friends have something scheduled at the same time as the student's own classes and events on one day. Quivr has no class roster: this only covers friends who share their schedule, so never present the result as a full list of who is in a class. Each of the student's items is returned with the overlapping friends (`name` is the friend's full name); `isSameClass` is true when the title (and the location, when both are known) matches, so it is likely the same class. `friendsChecked` is how many friends have at least one visible item that day: 0 means no friend shares anything that day, so say you don't know who is there.",
   inputSchema: {
     date: dateSchema.describe('The day to look at, YYYY-MM-DD'),
   },
@@ -68,7 +69,7 @@ export const getClassmates = defineTool({
             .filter(other => overlaps(item, other))
             .map(other => ({
               id: friend!.id,
-              name: displayName(friend!),
+              name: fullName(friend!),
               isSameClass: isSameClass(item, other),
               title: other.title,
               start: other.startTime,
