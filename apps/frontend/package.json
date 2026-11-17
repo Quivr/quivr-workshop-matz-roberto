@@ -6,6 +6,7 @@
   "dependencies": {
     "@ag-ui/client": "1.0.4",
     "@ag-ui/core": "1.0.4",
+    "lottie-react": "2.4.1",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "react-markdown": "10.1.0",
@@ -24,6 +25,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   }
 }
