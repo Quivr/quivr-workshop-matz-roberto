@@ -40,7 +40,7 @@ export function NextSteps({
       )}
       {steps.map((step, index) => (
         <button
-          key={step.label}
+          key={`${step.label}-${index}`}
           type="button"
           disabled={!canSend}
           onClick={() => send(step.message)}

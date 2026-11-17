@@ -638,7 +638,7 @@ export function ScanLayer({ x, y, isSlow, isFading }: ScanLayerProps) {
         />
       </g>
       <g
-        className="transition-transform duration-1000 ease-in-out"
+        className="transition-transform duration-1000 ease-in-out motion-reduce:transition-none"
         style={{ transform: `translate(${x}px, ${y}px)` }}
       >
         {[60, 120, 180].map(radius => (

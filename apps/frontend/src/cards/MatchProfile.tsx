@@ -172,9 +172,9 @@ function MoreDetails({ match }: { match: Match }) {
       {match.bio && <p className="text-xs">{match.bio}</p>}
       {interests.length > 0 && (
         <ul className="flex flex-wrap gap-1">
-          {interests.map(interest => (
+          {interests.map((interest, index) => (
             <li
-              key={interest}
+              key={`${interest}-${index}`}
               className="border-schedule-border-grey bg-surface/80 rounded-full border px-2 py-0.5 text-[11px]"
             >
               #{interest}
@@ -336,7 +336,7 @@ function MatchFace({ match, isLocked, kind, reasons }: MatchFaceProps) {
         <ul className="flex flex-wrap gap-1.5">
           {reasons.map((reason, i) => (
             <li
-              key={reason}
+              key={`${reason}-${i}`}
               className={`${chip} bg-main/40 text-heading`}
               style={chipDelay(i)}
             >

@@ -60,9 +60,9 @@ export function MenuCard({ result }: CardProps) {
     >
       {menu.dishes.length === 0 && <p>No dishes on the menu.</p>}
       <ul className="divide-schedule-border-grey divide-y">
-        {menu.dishes.map(dish => (
+        {menu.dishes.map((dish, index) => (
           <li
-            key={dish.name}
+            key={`${dish.name}-${index}`}
             className="flex items-center justify-between gap-2 py-1.5"
           >
             <span className="flex items-center gap-2">

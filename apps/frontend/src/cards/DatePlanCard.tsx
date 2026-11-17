@@ -262,14 +262,14 @@ function Field({
 function DietBadge({ dish }: { dish: Highlight }) {
   if (dish.vegan) {
     return (
-      <span className="bg-vegan shrink-0 rounded px-1.5 text-[10px] text-white">
+      <span className="bg-vegan text-on-diet shrink-0 rounded px-1.5 text-[10px]">
         vegan
       </span>
     )
   }
   if (dish.vegetarian) {
     return (
-      <span className="bg-vegetarian shrink-0 rounded px-1.5 text-[10px] text-white">
+      <span className="bg-vegetarian text-on-diet shrink-0 rounded px-1.5 text-[10px]">
         veggie
       </span>
     )
@@ -542,9 +542,9 @@ function FoundTicket({ plan }: { plan: Plan }) {
               <section>
                 <h4 className={LABEL}>On the menu</h4>
                 <ul className="mt-1.5 space-y-1">
-                  {highlights.map(dish => (
+                  {highlights.map((dish, index) => (
                     <li
-                      key={dish.name}
+                      key={`${dish.name}-${index}`}
                       className="flex items-baseline gap-2"
                     >
                       <span className="min-w-0">{dish.name}</span>
@@ -570,7 +570,7 @@ function FoundTicket({ plan }: { plan: Plan }) {
                 <ul className="mt-1.5 space-y-1.5">
                   {why.map((reason, index) => (
                     <li
-                      key={reason}
+                      key={`${reason}-${index}`}
                       className="date-check flex items-start gap-2"
                       style={{ animationDelay: `${450 + index * 160}ms` }}
                     >
@@ -747,7 +747,7 @@ function DateExtras({
           <ol className="mt-3 grid gap-2 sm:grid-cols-3">
             {mission.map((step, index) => (
               <li
-                key={step.title}
+                key={`${step.title}-${index}`}
                 className="bg-surface rounded-xl p-3 shadow-sm"
               >
                 <span className="text-love-text text-xs font-bold">

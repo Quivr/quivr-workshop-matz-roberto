@@ -184,7 +184,7 @@ function Pin({
   return (
     <g
       transform={`translate(${x} ${y})`}
-      className={`transition-opacity duration-300 ${verdict === 'nope' ? 'opacity-35' : ''}`}
+      className={`transition-opacity duration-300 motion-reduce:transition-none ${verdict === 'nope' ? 'opacity-35' : ''}`}
     >
       <g
         role="button"
@@ -218,7 +218,7 @@ function Pin({
             style={{ animationDelay: `${delay + LAND_MS}ms` }}
           />
           <g
-            className={`transition-transform duration-200 ${isSelected ? 'scale-125' : 'scale-100 group-hover:-translate-y-1 group-hover:scale-110 group-hover:-rotate-3'}`}
+            className={`transition-transform duration-200 motion-reduce:transition-none ${isSelected ? 'scale-125' : 'scale-100 group-hover:-translate-y-1 group-hover:scale-110 group-hover:-rotate-3'}`}
           >
             {isSelected && (
               <g
