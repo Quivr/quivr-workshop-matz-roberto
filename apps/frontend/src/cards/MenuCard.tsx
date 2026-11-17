@@ -7,6 +7,7 @@ type Dish = {
   prices: number[]
   vegetarian: boolean
   vegan: boolean
+  favorite: boolean
 }
 
 type Menu = {
@@ -34,6 +35,18 @@ function DietBadge({ dish }: { dish: Dish }) {
   return null
 }
 
+function FavouriteStar() {
+  return (
+    <span
+      className="bg-main text-main-text shrink-0 rounded px-1 text-xs"
+      title="One of your favourites"
+      aria-label="favourite"
+    >
+      ★
+    </span>
+  )
+}
+
 export function MenuCard({ result }: CardProps) {
   const menu = result as Menu
   const hours = menu.openingHours.join(', ') || 'closed'
@@ -51,7 +64,10 @@ export function MenuCard({ result }: CardProps) {
             className="flex items-center justify-between gap-2 py-1.5"
           >
             <span className="flex items-center gap-2">
-              {dish.name}
+              {dish.favorite && <FavouriteStar />}
+              <span className={dish.favorite ? 'font-bold' : undefined}>
+                {dish.name}
+              </span>
               <DietBadge dish={dish} />
             </span>
             {dish.prices[0] !== undefined && (

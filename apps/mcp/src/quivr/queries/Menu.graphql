@@ -16,6 +16,7 @@ query Menu($restaurantId: ID!, $timeRange: TimeRangeInput!) {
       vegetarian
       vegan
       allergens
+      favorite
     }
   }
 }
