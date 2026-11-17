@@ -81,3 +81,17 @@ export const buildRows = (
   }
   return rows
 }
+
+/** The rows for the settled thread plus the run that is going on right now. */
+export const buildThreadRows = (
+  thread: readonly ThreadItem[],
+  live: { speaker: string; messages: ThreadItem['message'][] } | null
+): Row[] =>
+  buildRows(
+    [
+      ...thread,
+      ...(live?.messages.map(message => ({ message, speaker: live.speaker })) ??
+        []),
+    ],
+    live?.speaker ?? null
+  )

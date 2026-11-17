@@ -16,10 +16,10 @@ const FACTS = {
   menu: null,
 }
 
-const setup = (isHidden = () => false) => {
+const setup = (isHidden = () => false, isBusy = () => false) => {
   const controller = createBreakController({ every: 1, durationMs: 60_000 })
   const stopController = controller.activate()
-  const life = createBarLife(controller, isHidden)
+  const life = createBarLife(controller, isHidden, isBusy)
   const stops = [stopController, life.gag.activate(), life.banter.activate()]
   const spoken: string[] = []
   const listen = (snapshot: () => { line: { text: string } | null }) => () => {
@@ -40,6 +40,20 @@ describe('bar life', () => {
     life.setFacts(FACTS)
     vi.advanceTimersByTime(6000)
     expect(spoken[0]).toContain('Algebra on Monday at 08:00')
+  })
+
+  it('waits while something else holds the floor, then carries on', () => {
+    let busy = true
+    const { life, spoken } = setup(
+      () => false,
+      () => busy
+    )
+    life.setFacts(FACTS)
+    vi.advanceTimersByTime(20_000)
+    expect(spoken).toEqual([])
+    busy = false
+    vi.advanceTimersByTime(8_000)
+    expect(spoken.length).toBeGreaterThan(0)
   })
 
   it('never has the gag and the banter talking at once', () => {

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import { getCharacter } from '../../characters/registry'
 import {
   buildInput,
+  CHAT_TOPIC,
   dropIncomplete,
   replyInstruction,
   spokenText,
@@ -14,9 +15,9 @@ import {
 } from './messages'
 import {
   argumentReducer,
+  firstPresent,
   initialState,
   MAX_TURNS,
-  speakerForTurn,
   type ArgumentAction,
 } from './turns'
 
@@ -28,14 +29,29 @@ type Live = { speaker: string; messages: Message[] }
 
 type TurnResult = { failure: string | null; text: string }
 
+export type ArgumentOptions = {
+  /** True for a character who has stepped out (on a break). Read again before every turn. */
+  isAway?: (id: string) => boolean
+  /** Answers the student whenever present, instead of the cast taking turns. */
+  answerer?: string
+  /** Lets the student write before any argument has started. */
+  canChatFirst?: boolean
+}
+
 /**
  * One shared thread, three characters. The reducer in turns.ts decides whose
  * turn it is; every turn is one run of a fresh agent that is given the whole
  * thread, so every character sees the same transcript. The run's own messages
  * join the thread when it ends. Every run is aborted on stop, on a student
- * message and on unmount.
+ * message and on unmount. A character who is away is skipped in the turn
+ * order (the reducer never counts a skipped turn, so the cap holds) and
+ * comes back into it when he is no longer away.
  */
-export const useArgument = (cast: readonly string[], model: string) => {
+export const useArgument = (
+  cast: readonly string[],
+  model: string,
+  options: ArgumentOptions = {}
+) => {
   const [state, setState] = useState(() => initialState(cast))
   const [thread, setThread] = useState<ThreadItem[]>([])
   const [live, setLive] = useState<Live | null>(null)
@@ -51,10 +67,19 @@ export const useArgument = (cast: readonly string[], model: string) => {
   const repliesRef = useRef(0)
   // Bumped on every stop: a loop or a run from an older generation gives up.
   const generationRef = useRef(0)
+  // Bumped by newArgument: a run from an older argument must not touch the new thread.
+  const epochRef = useRef(0)
   const modelRef = useRef(model)
+  const optionsRef = useRef(options)
   useEffect(() => {
     modelRef.current = model
+    optionsRef.current = options
   })
+
+  const awayNow = () => {
+    const isAway = optionsRef.current.isAway
+    return isAway ? cast.filter(isAway) : []
+  }
 
   const dispatch = (action: ArgumentAction) => {
     stateRef.current = argumentReducer(stateRef.current, action)
@@ -72,8 +97,9 @@ export const useArgument = (cast: readonly string[], model: string) => {
     instruction: UserMessage
   ): Promise<TurnResult> => {
     const generation = generationRef.current
+    const epoch = epochRef.current
     const input = buildInput(
-      topicRef.current!,
+      topicRef.current ?? CHAT_TOPIC,
       threadRef.current,
       speaker,
       nameOf,
@@ -116,6 +142,7 @@ export const useArgument = (cast: readonly string[], model: string) => {
       }
       // Aborted half way: a tool call without a result would break the next run.
       const fresh = dropIncomplete(agent.messages.slice(input.length))
+      if (epoch !== epochRef.current) return { failure: null, text: '' }
       commit(fresh.map(message => ({ message, speaker })))
       isRunningRef.current = false
       setLive(null)
@@ -135,10 +162,10 @@ export const useArgument = (cast: readonly string[], model: string) => {
   useEffect(() => stopAll, [])
 
   const start = async (topic: Topic) => {
-    if (stateRef.current.status !== 'idle') return
+    if (stateRef.current.status !== 'idle' || isRunningRef.current) return
     topicRef.current = topic
     const generation = generationRef.current
-    dispatch({ type: 'start', topic: topic.label })
+    dispatch({ type: 'start', topic: topic.label, away: awayNow() })
 
     // The reducer ends the argument at MAX_TURNS; this bound is a second guard.
     for (let i = 0; i < MAX_TURNS; i++) {
@@ -147,6 +174,7 @@ export const useArgument = (cast: readonly string[], model: string) => {
       if (generation !== generationRef.current) return
 
       const speaker = current.speaker
+      const away = awayNow()
       const previous = threadRef.current.findLast(
         item => item.speaker !== undefined && item.message.role === 'assistant'
       )?.speaker
@@ -155,7 +183,9 @@ export const useArgument = (cast: readonly string[], model: string) => {
         turnInstruction({
           turn: current.turn,
           speakerName: nameOf(speaker),
-          otherNames: current.cast.filter(id => id !== speaker).map(nameOf),
+          otherNames: current.cast
+            .filter(id => id !== speaker && !away.includes(id))
+            .map(nameOf),
           previousSpeakerName: previous ? nameOf(previous) : undefined,
         })
       )
@@ -167,7 +197,7 @@ export const useArgument = (cast: readonly string[], model: string) => {
         })
         return
       }
-      dispatch({ type: 'turnFinished' })
+      dispatch({ type: 'turnFinished', away: awayNow() })
     }
     dispatch({ type: 'stop' })
   }
@@ -180,7 +210,7 @@ export const useArgument = (cast: readonly string[], model: string) => {
   /** The student writes into the thread: the argument stops and one character answers. */
   const sendStudent = async (text: string) => {
     const status = stateRef.current.status
-    if (status === 'idle') return
+    if (status === 'idle' && !optionsRef.current.canChatFirst) return
     if (status === 'running') {
       dispatch({ type: 'studentMessage' })
       stopAll()
@@ -191,12 +221,37 @@ export const useArgument = (cast: readonly string[], model: string) => {
     commit([
       { message: { id: crypto.randomUUID(), role: 'user', content: text } },
     ])
-    // Whoever had the floor answers; later messages go round the cast.
-    const speaker = speakerForTurn(
-      stateRef.current.cast,
-      stateRef.current.turn + repliesRef.current++
-    )!
+    // Whoever had the floor answers; later messages go round the cast (the
+    // answerer, when there is one and he is here, takes all of them).
+    const away = awayNow()
+    const { answerer } = optionsRef.current
+    const speaker =
+      answerer !== undefined && !away.includes(answerer)
+        ? answerer
+        : firstPresent(
+            stateRef.current.cast,
+            stateRef.current.turn + repliesRef.current++,
+            away
+          )
+    if (speaker === null) return
     await runTurn(speaker, replyInstruction(nameOf(speaker)))
+  }
+
+  /** Back to an empty table: aborts any run, forgets the thread and the topic. */
+  const newArgument = () => {
+    epochRef.current += 1
+    stopAll()
+    isRunningRef.current = false
+    inflightRef.current = Promise.resolve()
+    topicRef.current = null
+    repliesRef.current = 0
+    threadRef.current = []
+    stateRef.current = initialState(cast)
+    setState(stateRef.current)
+    setThread([])
+    setLive(null)
+    setDurations({})
+    setError(null)
   }
 
   return {
@@ -209,5 +264,6 @@ export const useArgument = (cast: readonly string[], model: string) => {
     start,
     stop,
     sendStudent,
+    newArgument,
   }
 }

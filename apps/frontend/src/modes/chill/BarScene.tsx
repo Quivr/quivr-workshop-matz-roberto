@@ -194,6 +194,10 @@ function Say({ name, line, className = '', style, balloonOn }: SayProps) {
 }
 
 type Props = {
+  /** Shown from this viewport height up; below it the scene is hidden. */
+  showFromHeight?: 560 | 760
+  /** Overrides how the characters look (an argument going on). Gus on a break still dozes. */
+  clips?: Partial<Record<string, CharacterClip>>
   breakState: BreakSnapshot
   gagLine: GagLine | null
   /** Ambient chat about the student's schedule. Never plays over the gag. */
@@ -202,7 +206,14 @@ type Props = {
 }
 
 /** A bar: Gus behind the counter, Bram, Stien and Pip in front of it. Their words come in balloons. */
-export function BarScene({ breakState, gagLine, banterLine, pip }: Props) {
+export function BarScene({
+  showFromHeight = 560,
+  clips = {},
+  breakState,
+  gagLine,
+  banterLine,
+  pip,
+}: Props) {
   const line = gagLine ?? banterLine
   const [bartender] = charactersByRole('bartender')
   const beerLovers = charactersByRole('beer-lover')
@@ -217,7 +228,7 @@ export function BarScene({ breakState, gagLine, banterLine, pip }: Props) {
         ? BREAK_BANTER.text
         : undefined
   const clipOf = (id: string): CharacterClip =>
-    line?.speaker === id ? 'talking' : 'idle'
+    clips[id] ?? (line?.speaker === id ? 'talking' : 'idle')
   const isRefusing = gagLine?.speaker === bartender?.id
   const beerLoverLefts = ['10%', '26%']
   const gusLeft = '46%'
@@ -225,7 +236,11 @@ export function BarScene({ breakState, gagLine, banterLine, pip }: Props) {
   return (
     <section
       aria-label="The bar"
-      className="relative isolate mx-auto hidden h-[200px] w-full max-w-3xl overflow-x-clip [@media(min-height:560px)]:block"
+      className={`relative isolate mx-auto hidden h-[200px] w-full max-w-3xl overflow-x-clip ${
+        showFromHeight === 760
+          ? '[@media(min-height:760px)]:block'
+          : '[@media(min-height:560px)]:block'
+      }`}
     >
       <div className="absolute inset-0 overflow-hidden rounded-lg shadow-sm">
         <div className="bg-sidenav-blue absolute inset-0" />

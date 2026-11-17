@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest'
 
 import {
   argumentReducer,
+  firstPresent,
   initialState,
   MAX_TURNS,
+  nextSpeaker,
   speakerForTurn,
   type ArgumentAction,
 } from './turns'
@@ -117,5 +119,81 @@ describe('argumentReducer', () => {
     expect(run([{ type: 'stop' }, { type: 'studentMessage' }], idle)).toEqual(
       idle
     )
+  })
+})
+
+describe('an argument with a character away', () => {
+  const away = ['rex']
+
+  it('starts without the one who is away', () => {
+    expect(
+      run([{ type: 'start', topic: 'lunch', away: ['nova'] }])
+    ).toMatchObject({ status: 'running', speaker: 'rex' })
+  })
+
+  it('skips the one who is away and never repeats the speaker', () => {
+    let state = started()
+    const spoken = [state.speaker]
+    for (let i = 0; i < 5; i++) {
+      state = argumentReducer(state, { type: 'turnFinished', away })
+      spoken.push(state.speaker)
+    }
+    expect(spoken).toEqual(['nova', 'mira', 'nova', 'mira', 'nova', 'mira'])
+  })
+
+  it('lets the character back in when he is no longer away', () => {
+    let state = run([{ type: 'turnFinished', away }], started())
+    expect(state.speaker).toBe('mira')
+    state = argumentReducer(state, { type: 'turnFinished' })
+    expect(state.speaker).toBe('nova')
+    state = argumentReducer(state, { type: 'turnFinished' })
+    expect(state.speaker).toBe('rex')
+  })
+
+  it('does not count a skipped turn: the cap is still MAX_TURNS finished turns', () => {
+    const state = run(
+      turns(MAX_TURNS).map((): ArgumentAction => ({
+        type: 'turnFinished',
+        away,
+      })),
+      started()
+    )
+    expect(state).toMatchObject({
+      status: 'ended',
+      endReason: 'limit',
+      turn: MAX_TURNS,
+    })
+  })
+
+  it('ends instead of hanging when too few characters are left', () => {
+    const state = run(
+      [{ type: 'turnFinished', away: ['rex', 'mira'] }],
+      started()
+    )
+    expect(state).toMatchObject({
+      status: 'ended',
+      endReason: 'empty',
+      speaker: null,
+    })
+    expect(
+      run([{ type: 'start', topic: 'x', away: ['nova', 'rex'] }])
+    ).toMatchObject({ status: 'ended', endReason: 'empty' })
+  })
+
+  it('behaves like before when nobody is away', () => {
+    const cast = ['nova', 'rex', 'mira']
+    for (let turn = 0; turn < 6; turn++) {
+      expect(nextSpeaker(cast, [], cast[(turn + 2) % 3]!)).toBe(
+        speakerForTurn(cast, turn)
+      )
+    }
+  })
+})
+
+describe('firstPresent', () => {
+  it('looks from a position and wraps', () => {
+    expect(firstPresent(CAST, 1, ['rex'])).toBe('mira')
+    expect(firstPresent(CAST, 2, ['mira'])).toBe('nova')
+    expect(firstPresent(CAST, 0, [...CAST])).toBeNull()
   })
 })

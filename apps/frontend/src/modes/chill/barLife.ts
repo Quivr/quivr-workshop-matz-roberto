@@ -11,13 +11,15 @@ import { createSodaGag } from './sodaGag'
  */
 export function createBarLife(
   controller: BreakController,
-  isHidden: () => boolean = () => document.hidden
+  isHidden: () => boolean = () => document.hidden,
+  /** True while something else holds the floor (an argument): both stand down. */
+  isBusy: () => boolean = () => false
 ) {
   let isRunning = false
   let facts: BarFacts = NO_FACTS
 
   const isQuiet = () =>
-    !isHidden() && controller.getSnapshot().phase !== 'break'
+    !isHidden() && !isBusy() && controller.getSnapshot().phase !== 'break'
 
   const gag = createSodaGag({
     canPlay: () => isQuiet() && banter.getSnapshot().line === null,
