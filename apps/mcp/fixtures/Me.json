@@ -1,0 +1,10 @@
+{
+  "{}": {
+    "user": {
+      "id": "1001",
+      "firstName": "Alex",
+      "lastName": "Student",
+      "email": "alex.student@example.com"
+    }
+  }
+}

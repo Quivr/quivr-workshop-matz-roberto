@@ -4,6 +4,7 @@ import type { QuivrClient } from '../quivr/quivr-client.js'
 import { getLibraryOccupancy } from './get-library-occupancy.js'
 import { getMenu } from './get-menu.js'
 import { getMySchedule } from './get-my-schedule.js'
+import { getStudentCard } from './get-student-card.js'
 
 const fakeQuivr = (overrides: Partial<QuivrClient>) =>
   overrides as unknown as QuivrClient
@@ -155,5 +156,37 @@ describe('get_library_occupancy', () => {
       expect.objectContaining({ name: 'Agora', percentFull: 25 }),
       expect.objectContaining({ name: 'No sensor', percentFull: undefined }),
     ])
+  })
+})
+
+describe('get_student_card', () => {
+  it('returns the signed-in student identity with a full name', async () => {
+    const quivr = fakeQuivr({
+      getStudentCard: async () =>
+        ({
+          user: {
+            id: '1001',
+            firstName: 'Alex',
+            lastName: 'Student',
+            email: 'alex.student@example.com',
+          },
+        }) as never,
+    })
+
+    const result = await getStudentCard.run({}, quivr)
+
+    expect(result).toEqual({
+      id: '1001',
+      firstName: 'Alex',
+      lastName: 'Student',
+      name: 'Alex Student',
+      email: 'alex.student@example.com',
+    })
+  })
+
+  it('fails when nobody is signed in', async () => {
+    const quivr = fakeQuivr({ getStudentCard: async () => ({ user: null }) })
+
+    await expect(getStudentCard.run({}, quivr)).rejects.toThrow(/Not signed in/)
   })
 })
