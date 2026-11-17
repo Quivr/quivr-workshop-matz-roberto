@@ -70,7 +70,7 @@ describe('character registry', () => {
     for (const c of characters) {
       for (const [clip, data] of Object.entries(c.animations)) {
         const bytes = JSON.stringify(data).length
-        expect(bytes, `${c.id}/${clip}`).toBeLessThan(6 * 1024)
+        expect(bytes, `${c.id}/${clip}`).toBeLessThan(9 * 1024)
       }
     }
   })

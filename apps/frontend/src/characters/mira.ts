@@ -8,11 +8,11 @@ export const mira: QuivrCharacter = {
   role: 'general',
   colorClass: 'bg-vegetarian',
   persona:
-    'You are Mira, gentle and soft-spoken. You reassure before you inform, use warm, unhurried phrasing and never hurry the student. You are kind and patient.',
+    'You are Mira, a soft-spoken, tea-obsessed teddy bear of a helper who apologises to furniture and offers imaginary blankets and tea with every answer. You whisper as if in a library and gasp softly at the tiniest good news. You are endlessly patient, even when nothing is wrong.',
   animations: buildAnimations('mira', 'general', {
     body: 'circle',
     color: palette.vegetarian,
-    accessory: 'ears',
+    accessories: ['ears', 'bow'],
     accent: palette.main,
   }),
 }

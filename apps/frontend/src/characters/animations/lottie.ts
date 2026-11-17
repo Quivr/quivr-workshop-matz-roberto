@@ -17,21 +17,22 @@ export const luminance = (hex: string): number => {
 
 export const still = (k: number | Vec | Json): Json => ({ a: 0, k })
 
-/** Looping keyframes: `values` are spread evenly over the clip and end where they start. */
-export const loop = (values: Array<number | Vec>): Json => {
+/**
+ * Looping keyframes: `values` are spread evenly over the clip and end where they
+ * start. Eased by default; `linear` for constant-speed spins.
+ */
+export const loop = (values: Array<number | Vec>, linear = false): Json => {
   const last = values.length - 1
+  const ease = linear
+    ? { i: { x: 1, y: 1 }, o: { x: 0, y: 0 } }
+    : { i: { x: 0.5, y: 1 }, o: { x: 0.5, y: 0 } }
   return {
     a: 1,
     k: values.map((v, i) => {
       const s = Array.isArray(v) ? v : [v]
       return i === last
         ? { t: FRAMES, s }
-        : {
-            t: Math.round((i * FRAMES) / last),
-            s,
-            i: { x: 0.5, y: 1 },
-            o: { x: 0.5, y: 0 },
-          }
+        : { t: Math.round((i * FRAMES) / last), s, ...ease }
     }),
   }
 }
@@ -39,130 +40,134 @@ export const loop = (values: Array<number | Vec>): Json => {
 export const prop = (v: number | Vec | Json): Json =>
   typeof v === 'object' && !Array.isArray(v) ? v : still(v)
 
-const fill = (hex: string, opacity = 100): Json => ({
-  ty: 'fl',
-  c: still(hexToLottie(hex)),
-  o: still(opacity),
-  r: 1,
-})
-
-const stroke = (hex: string, w: number): Json => ({
-  ty: 'st',
-  c: still(hexToLottie(hex)),
-  o: still(100),
-  w: still(w),
-})
-
-export type Paint = { fill?: string; stroke?: string; width?: number }
+export type Paint = {
+  fill?: string
+  stroke?: string
+  width?: number
+  opacity?: number
+}
 
 const paint = (p: Paint): Json[] => [
-  ...(p.stroke ? [stroke(p.stroke, p.width ?? 2)] : []),
-  ...(p.fill ? [fill(p.fill)] : []),
+  ...(p.stroke
+    ? [
+        {
+          ty: 'st',
+          c: still(hexToLottie(p.stroke)),
+          o: still(100),
+          w: still(p.width ?? 2),
+        },
+      ]
+    : []),
+  ...(p.fill
+    ? [
+        {
+          ty: 'fl',
+          c: still(hexToLottie(p.fill)),
+          o: still(p.opacity ?? 100),
+          r: 1,
+        },
+      ]
+    : []),
 ]
 
-const group = (geometry: Json, p: Paint, rotation = 0): Json => ({
-  ty: 'gr',
-  it: [
-    geometry,
-    ...paint(p),
-    {
-      ty: 'tr',
-      p: still([0, 0]),
-      a: still([0, 0]),
-      s: still([100, 100]),
-      r: still(rotation),
-      o: still(100),
-    },
-  ],
+/** Geometry: positions are absolute in the 100x100 composition. */
+export const el = (x: number, y: number, w: number, h: number): Json => ({
+  ty: 'el',
+  p: still([x, y]),
+  s: still([w, h]),
 })
 
-export const ellipse = (x: number, y: number, w: number, h: number, p: Paint) =>
-  group({ ty: 'el', p: still([x, y]), s: still([w, h]) }, p)
-
-/** A rect, optionally rotated around its own centre. */
-export const rect = (
+export const rc = (
   x: number,
   y: number,
   w: number,
   h: number,
-  radius: number,
-  p: Paint,
-  rotation = 0
+  radius: number
 ): Json => ({
-  ty: 'gr',
-  it: [
-    { ty: 'rc', p: still([0, 0]), s: still([w, h]), r: still(radius) },
-    ...paint(p),
-    {
-      ty: 'tr',
-      p: still([x, y]),
-      a: still([0, 0]),
-      s: still([100, 100]),
-      r: still(rotation),
-      o: still(100),
-    },
-  ],
+  ty: 'rc',
+  p: still([x, y]),
+  s: still([w, h]),
+  r: still(radius),
 })
 
-/** Regular polygon (`star: false`) or star, first point at the top. */
-export const poly = (
+/** Regular polygon (or star), first point at the top. */
+export const pg = (
   x: number,
   y: number,
   points: number,
   radius: number,
-  p: Paint,
   rotation = 0,
   star = false
-): Json =>
-  group(
-    {
-      ty: 'sr',
-      sy: star ? 1 : 2,
-      pt: still(points),
-      p: still([x, y]),
-      r: still(rotation),
-      or: still(radius),
-      os: still(0),
-      ...(star ? { ir: still(radius * 0.45), is: still(0) } : {}),
-    },
-    p
-  )
+): Json => ({
+  ty: 'sr',
+  sy: star ? 1 : 2,
+  pt: still(points),
+  p: still([x, y]),
+  r: still(rotation),
+  or: still(radius),
+  os: still(0),
+  ...(star ? { ir: still(radius * 0.45), is: still(0) } : {}),
+})
 
 /** Closed half-ellipse (a smiling mouth), `w` wide and `h` deep, top edge at y. */
-export const mouthShape = (
+export const mouthPath = (x: number, y: number, w: number, h: number): Json => {
+  const hw = w / 2
+  const k = 0.55
+  return {
+    ty: 'sh',
+    ks: still({
+      c: true,
+      v: [
+        [x - hw, y],
+        [x, y + h],
+        [x + hw, y],
+      ],
+      i: [
+        [0, 0],
+        [-hw * k, 0],
+        [0, h * k],
+      ],
+      o: [
+        [0, h * k],
+        [hw * k, 0],
+        [0, 0],
+      ],
+    }),
+  }
+}
+
+/** One group: all geometries share a paint and one (optional) rotation about `at`. */
+export const g = (
+  geos: Json[],
+  p: Paint,
+  rotation = 0,
+  at: [number, number] = [0, 0]
+): Json => ({
+  ty: 'gr',
+  it: [
+    ...geos,
+    ...paint(p),
+    {
+      ty: 'tr',
+      p: still(at),
+      a: still([0, 0]),
+      s: still([100, 100]),
+      r: still(rotation),
+      o: still(100),
+    },
+  ],
+})
+
+/** A rect rotated around its own centre. */
+export const rotatedRect = (
   x: number,
   y: number,
   w: number,
   h: number,
-  p: Paint
-) => {
-  const hw = w / 2
-  const k = 0.55
-  return group(
-    {
-      ty: 'sh',
-      ks: still({
-        c: true,
-        v: [
-          [x - hw, y],
-          [x, y + h],
-          [x + hw, y],
-        ],
-        i: [
-          [0, 0],
-          [-hw * k, 0],
-          [0, h * k],
-        ],
-        o: [
-          [0, h * k],
-          [hw * k, 0],
-          [0, 0],
-        ],
-      }),
-    },
-    p
-  )
-}
+  radius: number,
+  p: Paint,
+  rotation: number
+): Json => g([rc(0, 0, w, h, radius)], p, rotation, [x, y])
 
 export type LayerOpts = {
   /** Pivot for rotation and scale; also where the layer sits at rest. */
@@ -174,59 +179,42 @@ export type LayerOpts = {
   opacity?: Json
 }
 
+const transform = (o: LayerOpts) => {
+  const [px, py] = o.pivot ?? [0, 0]
+  return {
+    o: prop(o.opacity ?? 100),
+    r: prop(o.rotation ?? 0),
+    p: prop(o.position ?? [px, py, 0]),
+    a: still([px, py, 0]),
+    s: prop(o.scale ?? [100, 100, 100]),
+  }
+}
+
+const base = { ddd: 0, sr: 1, ao: 0, ip: 0, op: FRAMES, st: 0, bm: 0 }
+
 export const layer = (
   ind: number,
   name: string,
   shapes: Json[],
   o: LayerOpts = {}
-): Json => {
-  const [px, py] = o.pivot ?? [0, 0]
-  return {
-    ddd: 0,
-    ind,
-    ty: 4,
-    nm: name,
-    sr: 1,
-    ...(o.parent ? { parent: o.parent } : {}),
-    ks: {
-      o: prop(o.opacity ?? 100),
-      r: prop(o.rotation ?? 0),
-      p: prop(o.position ?? [px, py, 0]),
-      a: still([px, py, 0]),
-      s: prop(o.scale ?? [100, 100, 100]),
-    },
-    ao: 0,
-    shapes,
-    ip: 0,
-    op: FRAMES,
-    st: 0,
-    bm: 0,
-  }
-}
+): Json => ({
+  ...base,
+  ind,
+  ty: 4,
+  nm: name,
+  ...(o.parent ? { parent: o.parent } : {}),
+  ks: transform(o),
+  shapes,
+})
 
 /** Invisible parent that carries the whole-body motion. */
-export const nullLayer = (ind: number, o: LayerOpts): Json => {
-  const [px, py] = o.pivot ?? [0, 0]
-  return {
-    ddd: 0,
-    ind,
-    ty: 3,
-    nm: 'root',
-    sr: 1,
-    ks: {
-      o: still(0),
-      r: prop(o.rotation ?? 0),
-      p: prop(o.position ?? [px, py, 0]),
-      a: still([px, py, 0]),
-      s: prop(o.scale ?? [100, 100, 100]),
-    },
-    ao: 0,
-    ip: 0,
-    op: FRAMES,
-    st: 0,
-    bm: 0,
-  }
-}
+export const nullLayer = (ind: number, o: LayerOpts): Json => ({
+  ...base,
+  ind,
+  ty: 3,
+  nm: 'root',
+  ks: { ...transform(o), o: still(0) },
+})
 
 export const composition = (name: string, layers: Json[]): Json => ({
   v: '5.7.0',

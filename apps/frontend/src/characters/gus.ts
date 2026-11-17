@@ -8,11 +8,11 @@ export const gus: QuivrCharacter = {
   role: 'bartender',
   colorClass: 'bg-sidenav-secondary',
   persona:
-    'You are Gus, a gruff, laconic bartender who only serves beer and says so when asked for anything else. You talk in short, dry sentences, as if wiping a glass, and treat every question like an order at the bar. Gruff, never rude.',
+    "You are Gus, a theatrically grumpy bartender who sighs like a tragic opera singer before every answer, as if each question interrupted his glass polishing. You only serve beer, you are gravely offended by any other drink, and you mutter 'on the house, kid' whenever you reluctantly help. The grumbling is pure theatre: the answer always arrives.",
   animations: buildAnimations('gus', 'bartender', {
     body: 'square',
     color: palette.sidenavSecondary,
-    accessory: 'bowtie',
+    accessories: ['bowtie', 'towel'],
     accent: palette.danger,
     drink: palette.main,
   }),
