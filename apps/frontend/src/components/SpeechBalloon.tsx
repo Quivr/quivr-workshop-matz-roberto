@@ -6,6 +6,7 @@ export type SpeechBalloonProps = {
   side?: 'left' | 'right'
   /** True while the text is still streaming. */
   isSpeaking?: boolean
+  /** Width and text size are the caller's: the balloon has no opinion on them. */
   className?: string
 }
 
@@ -32,7 +33,7 @@ export function SpeechBalloon({
   return (
     <div
       aria-busy={isSpeaking}
-      className={`bg-surface text-main-text border-schedule-border-grey motion-safe:animate-fade-up relative max-w-full min-w-0 rounded-2xl border px-3 py-2 text-sm break-words shadow-sm sm:max-w-lg ${className}`}
+      className={`bg-surface text-main-text border-schedule-border-grey motion-safe:animate-fade-up relative rounded-2xl border px-3 py-2 wrap-break-word shadow-sm ${className}`}
     >
       <span
         aria-hidden

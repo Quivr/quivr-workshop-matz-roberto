@@ -70,7 +70,7 @@ export const buildRows = (
     if (previous?.kind === 'tools' && previous.speaker === speaker) {
       previous.calls.push(...calls)
     } else {
-      rows.push({ kind: 'tools', id: message.id, speaker, calls })
+      rows.push({ kind: 'tools', id: `${message.id}-tools`, speaker, calls })
     }
   })
 
@@ -81,3 +81,17 @@ export const buildRows = (
   }
   return rows
 }
+
+/** The rows for the settled thread plus the run that is going on right now. */
+export const buildThreadRows = (
+  thread: readonly ThreadItem[],
+  live: { speaker: string; messages: ThreadItem['message'][] } | null
+): Row[] =>
+  buildRows(
+    [
+      ...thread,
+      ...(live?.messages.map(message => ({ message, speaker: live.speaker })) ??
+        []),
+    ],
+    live?.speaker ?? null
+  )

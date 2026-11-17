@@ -11,13 +11,16 @@ import { createSodaGag } from './sodaGag'
  */
 export function createBarLife(
   controller: BreakController,
-  isHidden: () => boolean = () => document.hidden
+  isHidden: () => boolean = () => document.hidden,
+  /** True while something else holds the floor (an argument): both stand down. */
+  initiallyBusy: () => boolean = () => false
 ) {
+  let isBusy = initiallyBusy
   let isRunning = false
   let facts: BarFacts = NO_FACTS
 
   const isQuiet = () =>
-    !isHidden() && controller.getSnapshot().phase !== 'break'
+    !isHidden() && !isBusy() && controller.getSnapshot().phase !== 'break'
 
   const gag = createSodaGag({
     canPlay: () => isQuiet() && banter.getSnapshot().line === null,
@@ -33,6 +36,10 @@ export function createBarLife(
   return {
     gag,
     banter,
+    /** Replaces the check for something else holding the floor. */
+    setBusy(value: () => boolean) {
+      isBusy = value
+    },
     /** True while the student's own question is being answered. */
     setRunning(value: boolean) {
       isRunning = value

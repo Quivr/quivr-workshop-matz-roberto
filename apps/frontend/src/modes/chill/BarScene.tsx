@@ -3,9 +3,9 @@ import type { CSSProperties } from 'react'
 import { CharacterAvatar } from '../../characters/CharacterAvatar'
 import { charactersByRole, getCharacter } from '../../characters/registry'
 import type { CharacterClip } from '../../characters/types'
+import { SpeechBalloon } from '../../components/SpeechBalloon'
 import type { BreakSnapshot } from './breakController'
 import { BREAK_BANTER, type GagLine, type PipState } from './script'
-import { SpeechBalloon } from './SpeechBalloon'
 
 /*
  * The scene is 200px tall, back to front:
@@ -183,7 +183,7 @@ function Say({ name, line, className = '', style, balloonOn }: SayProps) {
         <SpeechBalloon
           key={line}
           side={balloonOn === 'right' ? 'left' : 'right'}
-          className="text-sm"
+          className="w-fit max-w-xs text-sm"
         >
           <span className="sr-only">{name} says: </span>
           {line}
@@ -194,6 +194,12 @@ function Say({ name, line, className = '', style, balloonOn }: SayProps) {
 }
 
 type Props = {
+  /** Shown from this viewport height up; below it the scene is hidden. */
+  showFromHeight?: 560 | 760
+  /** Overrides how the characters look (an argument going on). Gus on a break still dozes. */
+  clips?: Partial<Record<string, CharacterClip>>
+  /** A line that is said over the gag and the banter (the bar reacting to an argument). */
+  reactionLine?: GagLine | null
   breakState: BreakSnapshot
   gagLine: GagLine | null
   /** Ambient chat about the student's schedule. Never plays over the gag. */
@@ -202,8 +208,16 @@ type Props = {
 }
 
 /** A bar: Gus behind the counter, Bram, Stien and Pip in front of it. Their words come in balloons. */
-export function BarScene({ breakState, gagLine, banterLine, pip }: Props) {
-  const line = gagLine ?? banterLine
+export function BarScene({
+  showFromHeight = 560,
+  clips = {},
+  reactionLine = null,
+  breakState,
+  gagLine,
+  banterLine,
+  pip,
+}: Props) {
+  const line = reactionLine ?? gagLine ?? banterLine
   const [bartender] = charactersByRole('bartender')
   const beerLovers = charactersByRole('beer-lover')
   const [sodaLover] = charactersByRole('soda-lover')
@@ -217,7 +231,7 @@ export function BarScene({ breakState, gagLine, banterLine, pip }: Props) {
         ? BREAK_BANTER.text
         : undefined
   const clipOf = (id: string): CharacterClip =>
-    line?.speaker === id ? 'talking' : 'idle'
+    clips[id] ?? (line?.speaker === id ? 'talking' : 'idle')
   const isRefusing = gagLine?.speaker === bartender?.id
   const beerLoverLefts = ['10%', '26%']
   const gusLeft = '46%'
@@ -225,7 +239,11 @@ export function BarScene({ breakState, gagLine, banterLine, pip }: Props) {
   return (
     <section
       aria-label="The bar"
-      className="relative isolate mx-auto hidden h-[200px] w-full max-w-3xl overflow-x-clip [@media(min-height:560px)]:block"
+      className={`relative isolate mx-auto hidden h-[200px] w-full max-w-3xl overflow-x-clip ${
+        showFromHeight === 760
+          ? '[@media(min-height:760px)]:block'
+          : '[@media(min-height:560px)]:block'
+      }`}
     >
       <div className="absolute inset-0 overflow-hidden rounded-lg shadow-sm">
         <div className="bg-sidenav-blue absolute inset-0" />

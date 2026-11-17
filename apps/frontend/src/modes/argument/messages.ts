@@ -31,6 +31,13 @@ export const TOPICS: Topic[] = [
   },
 ]
 
+/** No argument yet: the student is just talking to the characters. */
+export const CHAT_TOPIC: Topic = {
+  id: 'chat',
+  label: 'Chat',
+  question: '',
+}
+
 /** A message in the shared thread, and which character wrote it (none: the student). */
 export type ThreadItem = { message: Message; speaker?: string }
 
@@ -48,7 +55,10 @@ const FACT_RULES = [
 export const kickoffMessage = (topic: Topic): UserMessage => ({
   id: 'kickoff',
   role: 'user',
-  content: `The student wants three characters to argue about their own data while they watch. Topic: ${topic.question}`,
+  content:
+    topic.id === CHAT_TOPIC.id
+      ? 'The student is talking to some characters in a group chat. They may start an argument between the characters later.'
+      : `The student wants three characters to argue about their own data while they watch. Topic: ${topic.question}`,
 })
 
 type InstructionInput = {

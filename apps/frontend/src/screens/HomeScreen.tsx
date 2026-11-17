@@ -50,8 +50,8 @@ export function HomeScreen({ onSelect }: Props) {
           What do you want to do?
         </p>
         <ModeCard
-          title="Chat"
-          description="Ask about menus, classes, libraries and more."
+          title="Quivr SaaS"
+          description="Ask Quivr about menus, classes, libraries and more."
           onClick={() => onSelect('chat')}
         />
         <section className="space-y-2">
@@ -66,6 +66,11 @@ export function HomeScreen({ onSelect }: Props) {
               title="Chill"
               description="Relax and hang out."
               onClick={() => onSelect('chill')}
+            />
+            <ModeCard
+              title="Party"
+              description="The bar and the argument, all at once, with you in the middle."
+              onClick={() => onSelect('party')}
             />
           </div>
         </section>

@@ -34,6 +34,15 @@ describe('SpeechBalloon', () => {
     expect(streaming).not.toContain('animate-dot')
   })
 
+  it('leaves width and text size to the caller', () => {
+    const html = renderToStaticMarkup(
+      <SpeechBalloon className="w-fit max-w-xs">Hi</SpeechBalloon>
+    )
+    expect(html).toContain('w-fit max-w-xs')
+    expect(html.match(/max-w-/g)).toHaveLength(1)
+    expect(html).not.toMatch(/text-(sm|xs|base)/)
+  })
+
   it('uses theme tokens only and keeps motion behind motion-safe', () => {
     const html = renderToStaticMarkup(
       <SpeechBalloon isSpeaking>{null}</SpeechBalloon>
