@@ -1,4 +1,8 @@
+import { useState } from 'react'
+
 import { Header } from '../components/Header'
+import { ArgumentArena } from '../modes/argument/ArgumentArena'
+import { pickCast } from '../modes/argument/cast'
 import type { ScreenProps } from './types'
 
 export function ArgumentScreen({
@@ -7,6 +11,8 @@ export function ArgumentScreen({
   onModelChange,
   onHome,
 }: ScreenProps) {
+  const [round, setRound] = useState(() => ({ id: 0, cast: pickCast() }))
+
   return (
     <div className="flex h-dvh flex-col">
       <Header
@@ -15,10 +21,14 @@ export function ArgumentScreen({
         onModelChange={onModelChange}
         onHome={onHome}
       />
-      <main className="mx-auto w-full max-w-3xl flex-1 p-4 pt-10 text-center">
-        <p className="font-title text-sidenav-blue text-3xl">Argument</p>
-        <p>Coming soon.</p>
-      </main>
+      <ArgumentArena
+        key={round.id}
+        cast={round.cast}
+        model={model}
+        onNewArgument={() =>
+          setRound(previous => ({ id: previous.id + 1, cast: pickCast() }))
+        }
+      />
     </div>
   )
 }
