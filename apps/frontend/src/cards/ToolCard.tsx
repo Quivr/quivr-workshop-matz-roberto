@@ -42,8 +42,12 @@ export function ToolCard({
   const Custom = cards[toolName]
 
   return (
-    <div className="space-y-1">
-      {Custom && !props.isPending && !props.error && <Custom {...props} />}
+    <div className="motion-safe:animate-fade-up space-y-1">
+      {Custom && !props.isPending && !props.error && (
+        <div className="motion-safe:animate-fade-up">
+          <Custom {...props} />
+        </div>
+      )}
       <ToolCallCard {...props} />
     </div>
   )
